@@ -1,42 +1,34 @@
 import React from 'react';
-import type {PropsWithChildren} from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Home from './screen/Home';
 import Location from './screen/Location';
 import Profile from './screen/Profile';
 import ScanQR from './screen/ScanQR';
+import EditProfile from './screen/EditProfile';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { NativeBaseProvider, Box, Text } from 'native-base';
 import { faHome,faQrcode,faLocationPin,faUser,faBell,faSearch } from '@fortawesome/free-solid-svg-icons';
-import { View,StyleSheet } from 'react-native';
-
+import { createStackNavigator } from '@react-navigation/stack';
 
 const Tab = createBottomTabNavigator();
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'blue', // Set the desired background color here
-  },
-});
+
+const ProfileStack = createStackNavigator();
 
 
-function App(): JSX.Element {
+function ProfileStackNavigator() {
   return (
+    <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
+      <ProfileStack.Screen name="Profile1" component={Profile} />
+      <ProfileStack.Screen name="EditProfile" component={EditProfile} />
+    </ProfileStack.Navigator>
+  );
+}
 
+const App: React.FC =() => {
+  return (
     <NativeBaseProvider>
      <NavigationContainer>
-     {/* <ScrollView
-        contentInsetAdjustmentBehavior="automatic">
-        <Header />
-        <View>
-          <Section title="Step One">
-            Edit <Text>App.tsx</Text> to change this
-            screen and then come back to see your edits. My edits are woohooo!
-          </Section>
-         
-        </View>
-      </ScrollView>  */}
       <Tab.Navigator 
           screenOptions={({ route }) => ({
             tabBarIcon: ({ color, size }) => {
@@ -61,10 +53,10 @@ function App(): JSX.Element {
             }, headerShown:false, tabBarActiveBackgroundColor:"black"
           })}
           >
-       <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="Scan QR" component={ScanQR} />
         <Tab.Screen name="Location" component={Location}/>
-        <Tab.Screen name="Profile" component={Profile} /> 
+        <Tab.Screen name="Profile" component={ProfileStackNavigator}/> 
       </Tab.Navigator>
     </NavigationContainer>
       </NativeBaseProvider>

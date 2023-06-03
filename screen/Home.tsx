@@ -1,12 +1,52 @@
 import React from 'react';
-import { NativeBaseProvider, Box, Text } from 'native-base';
+import { NativeBaseProvider, Box, Text, ScrollView, VStack,Divider, Center, HStack, Image } from 'native-base';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCab } from '@fortawesome/free-solid-svg-icons';
+
 
 const Home = () => {
   return (
     <NativeBaseProvider>
-      <Box alignItems="center">
-        <Text>This is Home hehehe</Text>
+      <VStack  bg="#003572" height="100%">
+      <Box mt={5}>
+        <HStack  space={3} justifyContent="space-between" alignItems="center">
+        <Text fontSize="20" fontWeight="bold" ml={5} color="white">Hi, Shan!</Text>
+    
+        <Box alignItems="center" mr={5} bg="#F3F3F3e" p={2} borderRadius={50} borderWidth={1}> 
+        <FontAwesomeIcon icon={faCab} size={30} color='#F79520' />
+        </Box>
+        </HStack>
       </Box>
+      <ScrollView>
+        <Center>
+        <VStack space="4" width="90%" mt={4} mb={10}>
+        <Box  p="4" borderWidth={1} borderRadius={10} bg="#F3F3F3" borderColor="#F79520" >
+        <VStack>
+         <Text>Your Parking Slot: </Text>
+         <Text fontSize="30" fontWeight="bold">-- </Text>
+         </VStack>
+        </Box>
+        <Box p="4" borderWidth={1} borderRadius={10} bg="#F3F3F3" borderColor="#F79520">
+        <VStack>
+         <Text>Empty Lots in Sunway University Parking: </Text>
+         <Text fontSize="100" fontWeight="bold">788 </Text>
+         </VStack>
+        </Box>
+        <Box borderWidth={1} borderRadius={10} bg="#F3F3F3" borderColor="#F79520">
+        <VStack>
+         <Text  p="4">Available slot for reservation:  </Text>
+         <HStack>
+          <Text fontSize="100" fontWeight="bold"  pl="4">1 </Text> 
+          <Text fontSize="70" fontWeight="bold" color="grey">of 3</Text>
+          </HStack>
+          <Box bg="#F79520" borderBottomLeftRadius={10} borderBottomRightRadius={10} alignItems="center"><Text mt={2} fontWeight="bold" >Click here to reserve {'>'}</Text> </Box>
+         </VStack>
+        </Box>
+
+        </VStack>
+        </Center>
+      </ScrollView>
+      </VStack>
     </NativeBaseProvider>
   );
 };
