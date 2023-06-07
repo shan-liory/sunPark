@@ -8,18 +8,84 @@ import {
   HStack,
   VStack,
   Center,
-} from 'native-base';
+  FlatList
+} from 'native-base'
 import {useRoute, useNavigation} from '@react-navigation/native';
+
+
+type ParkingLot = {
+  _id: string;
+  name: string;
+  isReserved: boolean;
+  isAvailable: boolean;
+};
+
+const parkingLots: Array<ParkingLot> = [
+  {
+    _id: 'A1',
+    name: 'A1',
+    isReserved: false,
+    isAvailable: true,
+  },
+  {
+    _id: 'A2',
+    name: 'A2',
+    isReserved: false,
+    isAvailable: true,
+  },
+  {
+    _id: 'A3',
+    name: 'A3',
+    isReserved: false,
+    isAvailable: true,
+  },
+  {
+    _id: 'A4',
+    name: 'A4',
+    isReserved: false,
+    isAvailable: true,
+  },
+  {
+    _id: 'A5',
+    name: 'A5',
+    isReserved: false,
+    isAvailable: true,
+  },
+  {
+    _id: 'A6',
+    name: 'A6',
+    isReserved: false,
+    isAvailable: true,
+  },
+  {
+    _id: 'A7',
+    name: 'A7',
+    isReserved: false,
+    isAvailable: true,
+  },
+  {
+    _id: 'A8',
+    name: 'A8',
+    isReserved: false,
+    isAvailable: false,
+  },
+  {
+    _id: 'A9',
+    name: 'A9',
+    isReserved: false,
+    isAvailable: true,
+  },
+  {
+    _id: 'A10',
+    name: 'A10',
+    isReserved: false,
+    isAvailable: true,
+  },
+];
 
 const ParkingSession = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
-
-  const numColumns = 2;
-  const numRows = 5;
-
-  // const boxArray = Array(numColumns * numRows).fill(null);
-  console.log(Array(numRows));
 
   const onPressEndSession = () => {
     axios
@@ -40,7 +106,7 @@ const ParkingSession = () => {
   };
 
   return (
-    <NativeBaseProvider>
+    // contentContainerStyle flex:1
       <Box bg="#003572" flex={1} alignContent="center">
         <Text fontSize="20" ml={5} fontWeight="bold" mt={5} color="white">
           Parking Lot
@@ -50,55 +116,49 @@ const ParkingSession = () => {
             You have parked at lot{' '}
             <Text fontWeight="bold">{route.params.parkedLotName}</Text>
           </Text>
-          <Box width="90%" mt={2}>
-            {/* <HStack space={2}>
-              <VStack  flex={1}>
-                <Box height="100" backgroundColor="red.200" mb={2} pr={2} alignItems="flex-end"><Center> </Center>A1</Box>
-                <Box height="100" backgroundColor="blue.200" mb={2} pr={2} alignItems="flex-end"><Center> </Center>A2</Box>
-                <Box height="100" backgroundColor="green.200" mb={2} pr={2} alignItems="flex-end"><Center> </Center>A3</Box>
-                <Box height="100" backgroundColor="yellow.200" mb={2} pr={2} alignItems="flex-end"><Center> </Center>A4</Box>
-                <Box height="100" backgroundColor="purple.200" mb={2} pr={2} alignItems="flex-end"><Center> </Center>A5</Box>
-              </VStack>
-              <VStack  flex={1}>
-                <Box height="100" backgroundColor="orange.200" mb={2} pr={2} alignItems="flex-end"><Center> </Center>A6</Box>
-                <Box height="100" backgroundColor="pink.200" mb={2} pr={2} alignItems="flex-end"><Center> </Center>A7</Box>
-                <Box height="100" backgroundColor="teal.200" mb={2} pr={2} alignItems="flex-end"><Center> </Center>A8</Box>
-                <Box height="100" backgroundColor="gray.200" mb={2} pr={2} alignItems="flex-end"><Center> </Center>A9</Box>
-                <Box height="100" backgroundColor="cyan.200" mb={2} pr={2} alignItems="flex-end"><Center> </Center>A10</Box>
-              </VStack>
-            </HStack> */}
-
-            <HStack space={2}>
-              {Array(numColumns)
-                .fill(null)
-                .map((_, columnIndex) => (
-                  <VStack key={columnIndex} flex={1} height="500">
-                    {Array(numRows)
-                      .fill(null)
-                      .map((_, rowIndex) => (
-                        <Box
-                          key={`${columnIndex}-${rowIndex}`}
-                          flex={1}
-                          height="100"
-                          backgroundColor="gray.200"
-                          mb={1}
-                          alignItems="flex-end"
-                          pr={1}>
-                          {' '}
-                          <HStack><Text>A{columnIndex}</Text></HStack>
-                        </Box>
-                      ))}
-                  </VStack>
-                ))}
-            </HStack>
           </Box>
+          <FlatList
+          contentContainerStyle={{
+            padding: 20,
+          }}
+          columnWrapperStyle={{
+            justifyContent: 'space-evenly',
+            gap: 10,
+          }}
+          data={parkingLots}
+          renderItem={({item, index}) => {
+            const isLastItemWithoutPair: boolean =
+              parkingLots.length % 2 !== 0 && parkingLots.length - 1 === index;
+            return (
+              <HStack
+              justifyContent={'center'}
+              alignItems={'center'}
+              style={{
+                flex: 0.5,
+                marginBottom: 5,
+              }}
+                backgroundColor={item.isAvailable ?  "gray.200" : "#F79520"}>
+                <Text>{item.name}</Text>
+              </HStack>
+            );
+          }}
+          keyExtractor={item => item._id}
+          numColumns={2} // Set the number of columns to 2
+        />
           <Button mt={5} onPress={() => onPressEndSession()}>
             End Session
           </Button>
-        </Box>
+        
       </Box>
-    </NativeBaseProvider>
   );
 };
 
 export default ParkingSession;
+
+{/* <Box>
+  {
+    parkingLots.map(parkingLot => {
+
+    })
+  }
+</Box> */}
