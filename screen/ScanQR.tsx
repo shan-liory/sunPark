@@ -1,51 +1,130 @@
-import React, {useState} from 'react';
-import {NativeBaseProvider, Box, Text, Pressable, Center} from 'native-base';
+import React, {useState, useEffect} from 'react';
+import {NativeBaseProvider, Box, Text, Pressable, Center,Modal,Button,HStack} from 'native-base';
 import axios from 'axios';
 import {RNCamera} from 'react-native-camera';
 import QRCodeScanner from 'react-native-qrcode-scanner';
+import { useNavigation } from '@react-navigation/native';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faCircleXmark } from '@fortawesome/free-solid-svg-icons';
+
 
 const ScanQR = () => {
- const [isParked,setIsParked] = useState<boolean>(false)
- const [parkedLot, setParkedLot] = useState<string>("")
-  const onSuccess = async (e: {data: string}) => {
-    try {
+ const [parkedLot, setParkedLot] = useState({name:"", id:""})
+ const [isValid, setIsValid] = useState<boolean>(true)
+ const [open, setOpen] = useState<boolean>(false);
+ const [isModal2Open, setIsModal2Open] = useState(false);
+
+ const navigation = useNavigation<any>();
+
+ const onPress = () => {
+  navigation.navigate('ParkingSession', {
+  });
+ }
+
+  const onSuccess = (e: {data: string}) => {
       console.log(e.data);
-      await axios
-        .post('http://192.168.1.102:3500/parkingQrCode/get', {parkingLot: e.data})
+      axios
+        .post('http://172.20.10.4:3500/parkingQrCode/get', {parkingLot: e.data})
         .then(res => {
           if (res.data.message === 'success') {
-            setIsParked(true)
-            setParkedLot(res.data.lot)
-            console.log('scanned' + res.data.lot);
+             navigation.navigate('ParkingSession', {
+                parkedLotId:e.data, parkedLotName:res.data.lot
+              });
           }
-        });
-    } catch (err) {
-      console.error('An error occurred', err);
-    }
+          if (res.data.message === 'occupied') {
+            setIsModal2Open(true)
+         }
+          else {
+            console.log("record not found")
+            setIsValid(false)
+          }
+        })
+        .catch((err)=>{
+          // console.error('An error occurred', err.response.status);
+          if (err && err.response.status === 400){
+            setOpen(true)
+          }
+          else{
+            console.log('An error occurred', err.response)
+          }
+        })
+ 
   };
+
+  
 
   return (
     <NativeBaseProvider>
       <Box bg="#003572" flex={1} alignContent="center">
-        <Box alignItems="center" display={isParked ? "none"  : "flex"}>
-          <Text fontSize="20" fontWeight="bold" mt={5} color="white">
+      <Text fontSize="20" ml={5} fontWeight="bold" mt={5} color="white">
             Scan QR Code
           </Text>
+          <Button onPress={onPress}> here </Button>
+        <Box alignItems="center">
+          <Text color="white" mt={3} fontSize="12">
+                Scan parking QR code here.
+              </Text>
           <QRCodeScanner
             onRead={onSuccess}
+            reactivateTimeout={3000}
+            reactivate={true}
             flashMode={RNCamera.Constants.FlashMode.off}
-            cameraStyle={{width: '90%', marginLeft: 20, marginTop: 100}}
-            topContent={
-              <Text style={{color: 'white'}}>
-                Scan the provided parking QR code.
-              </Text>
-            }
+            cameraStyle={{width: '90%', marginLeft: 20, marginTop: 50}}
           />
         </Box>
-        <Box alignItems="center" display={isParked ? "flex"  : "none"}>
-          <Text mt={5} color="white"> You have parked at {parkedLot} !</Text>
-        </Box>
       </Box>
+      <Modal
+            isOpen={open}
+            onClose={() => setOpen(false)}
+            safeAreaTop={true}
+          >
+            <Modal.Content maxWidth="350">
+              <Modal.CloseButton />
+              <Modal.Header>Invalid QR code</Modal.Header>
+              <Modal.Body>
+              <Text>Try another QR code</Text>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button.Group space={2}>
+                  <Button
+                    variant="ghost"
+                    colorScheme="blueGray"
+                    onPress={() => {
+                      setOpen(false);
+                    }}
+                  >
+                    OK
+                  </Button>
+                </Button.Group>
+              </Modal.Footer>
+            </Modal.Content>
+          </Modal>
+          <Modal
+            isOpen={isModal2Open}
+            onClose={() => setIsModal2Open(false)}
+            safeAreaTop={true}
+          >
+            <Modal.Content maxWidth="350">
+              <Modal.CloseButton />
+              <Modal.Header><HStack><FontAwesomeIcon icon={faCircleXmark} color="red" size={28}/><Text fontWeight="bold"> Oops!</Text></HStack></Modal.Header>
+              <Modal.Body >
+              <Text>This code is not available.</Text>
+              <Text>Please scan another valid QR code.</Text>
+              </Modal.Body>
+              <Modal.Footer>
+                <Button.Group>
+                  <Button
+                    colorScheme="gray"
+                    onPress={() => {
+                      setIsModal2Open(false);
+                    }}
+                  >
+                    OK
+                  </Button>
+                </Button.Group>
+              </Modal.Footer>
+            </Modal.Content>
+          </Modal>
     </NativeBaseProvider>
   );
 };

@@ -6,6 +6,7 @@ import Location from './screen/Location';
 import Profile from './screen/Profile';
 import ScanQR from './screen/ScanQR';
 import EditProfile from './screen/EditProfile';
+import ParkingSession from './screen/ParkingSession';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { NativeBaseProvider, Box, Text } from 'native-base';
 import { faHome,faQrcode,faLocationPin,faUser,faBell,faSearch } from '@fortawesome/free-solid-svg-icons';
@@ -22,6 +23,16 @@ function ProfileStackNavigator() {
       <ProfileStack.Screen name="Profile1" component={Profile} />
       <ProfileStack.Screen name="EditProfile" component={EditProfile} />
     </ProfileStack.Navigator>
+  );
+}
+
+const QRStack = createStackNavigator();
+function QRStackNavigator() {
+  return (
+    <QRStack.Navigator screenOptions={{ headerShown: false }}>
+      <QRStack.Screen name="QR1" component={ScanQR} />
+      <QRStack.Screen name="ParkingSession" component={ParkingSession} />
+    </QRStack.Navigator>
   );
 }
 
@@ -54,7 +65,7 @@ const App: React.FC =() => {
           })}
           >
         <Tab.Screen name="Home" component={Home} />
-        <Tab.Screen name="Scan QR" component={ScanQR} />
+        <Tab.Screen name="Scan QR" component={QRStackNavigator} />
         <Tab.Screen name="Location" component={Location}/>
         <Tab.Screen name="Profile" component={ProfileStackNavigator}/> 
       </Tab.Navigator>
