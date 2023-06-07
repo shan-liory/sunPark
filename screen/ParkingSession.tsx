@@ -23,7 +23,7 @@ const ParkingSession = () => {
 
   const onPressEndSession = () => {
     axios
-      .post('http://172.20.10.4:3500/parkingQrCode/endSession', {
+      .post('http://192.168.1.110:3500/parkingQrCode/endSession', {
         parkingLot: route.params.parkedLotId,
       })
       .then(res => {
