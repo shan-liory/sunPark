@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import {
   NativeBaseProvider,
@@ -8,10 +8,9 @@ import {
   HStack,
   VStack,
   Center,
-  FlatList
-} from 'native-base'
+  FlatList,
+} from 'native-base';
 import {useRoute, useNavigation} from '@react-navigation/native';
-
 
 type ParkingLot = {
   _id: string;
@@ -87,6 +86,20 @@ const ParkingSession = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
 
+  const [lots, setLots] = useState<Array<ParkingLot>>();
+  useEffect(() => {
+    axios
+      .get('http://192.168.1.110:3500/parkingLotsStatus')
+      .then(response => {
+        setLots(response.data);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
+
+  console.log(lots)
+
   const onPressEndSession = () => {
     axios
       .post('http://192.168.1.110:3500/parkingQrCode/endSession', {
@@ -107,58 +120,57 @@ const ParkingSession = () => {
 
   return (
     // contentContainerStyle flex:1
-      <Box bg="#003572" flex={1} alignContent="center">
-        <Text fontSize="20" ml={5} fontWeight="bold" mt={5} color="white">
-          Parking Lot
+    <Box bg="#003572" flex={1} alignContent="center">
+      <Text fontSize="20" ml={5} fontWeight="bold" mt={5} color="white">
+        Parking Lot
+      </Text>
+      <Box alignItems="center" mt={4}>
+        <Text color="white">
+          You have parked at lot{' '}
+          <Text fontWeight="bold">{route.params.parkedLotName}</Text>
         </Text>
-        <Box alignItems="center" mt={4}>
-          <Text color="white">
-            You have parked at lot{' '}
-            <Text fontWeight="bold">{route.params.parkedLotName}</Text>
-          </Text>
-          </Box>
-          <FlatList
-          contentContainerStyle={{
-            padding: 20,
-          }}
-          columnWrapperStyle={{
-            justifyContent: 'space-evenly',
-            gap: 10,
-          }}
-          data={parkingLots}
-          renderItem={({item, index}) => {
-            const isLastItemWithoutPair: boolean =
-              parkingLots.length % 2 !== 0 && parkingLots.length - 1 === index;
-            return (
-              <HStack
+      </Box>
+      <FlatList
+        contentContainerStyle={{
+          padding: 20,
+        }}
+        columnWrapperStyle={{
+          justifyContent: 'space-evenly',
+          gap: 10,
+        }}
+        data={lots}
+        renderItem={({item, index}) => {
+          return (
+            <HStack
               justifyContent={'center'}
               alignItems={'center'}
               style={{
                 flex: 0.5,
                 marginBottom: 5,
               }}
-                backgroundColor={item.isAvailable ?  "gray.200" : "#F79520"}>
-                <Text>{item.name}</Text>
-              </HStack>
-            );
-          }}
-          keyExtractor={item => item._id}
-          numColumns={2} // Set the number of columns to 2
-        />
-          <Button mt={5} onPress={() => onPressEndSession()}>
-            End Session
-          </Button>
-        
-      </Box>
+              backgroundColor={item.isAvailable ? 'gray.200' : '#F79520'}>
+              <Text>{item.name}</Text>
+            </HStack>
+          );
+        }}
+        keyExtractor={item => item._id}
+        numColumns={2} // Set the number of columns to 2
+      />
+      <Button mt={5} onPress={() => onPressEndSession()}>
+        End Session
+      </Button>
+    </Box>
   );
 };
 
 export default ParkingSession;
 
-{/* <Box>
+{
+  /* <Box>
   {
     parkingLots.map(parkingLot => {
 
     })
   }
-</Box> */}
+</Box> */
+}
