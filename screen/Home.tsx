@@ -19,7 +19,8 @@ const Home = () => {
 
   setInterval(() => {
       axios
-        .get('http://192.168.1.110:3500/availableParkingLots')
+        // .get('http://192.168.1.110:3500/availableParkingLots')
+        .get('http://172.20.10.4:3500/availableParkingLots')
         .then(response => {
           // console.log(response.data.length)
           setParkingLots(response.data.length);

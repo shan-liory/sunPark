@@ -24,7 +24,8 @@ const ScanQR = () => {
   const onSuccess = (e: {data: string}) => {
       console.log(e.data);
       axios
-        .post('http://192.168.1.110:3500/parkingQrCode/get', {parkingLot: e.data})
+        // .post('http://192.168.1.110:3500/parkingQrCode/get', {parkingLot: e.data})
+        .post('http://172.20.10.4:3500/parkingQrCode/get', {parkingLot: e.data})
         .then(res => {
           if (res.data.message === 'success') {
             console.log("success")
