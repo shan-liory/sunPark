@@ -19,68 +19,6 @@ type ParkingLot = {
   isAvailable: boolean;
 };
 
-const parkingLots: Array<ParkingLot> = [
-  {
-    _id: 'A1',
-    name: 'A1',
-    isReserved: false,
-    isAvailable: true,
-  },
-  {
-    _id: 'A2',
-    name: 'A2',
-    isReserved: false,
-    isAvailable: true,
-  },
-  {
-    _id: 'A3',
-    name: 'A3',
-    isReserved: false,
-    isAvailable: true,
-  },
-  {
-    _id: 'A4',
-    name: 'A4',
-    isReserved: false,
-    isAvailable: true,
-  },
-  {
-    _id: 'A5',
-    name: 'A5',
-    isReserved: false,
-    isAvailable: true,
-  },
-  {
-    _id: 'A6',
-    name: 'A6',
-    isReserved: false,
-    isAvailable: true,
-  },
-  {
-    _id: 'A7',
-    name: 'A7',
-    isReserved: false,
-    isAvailable: true,
-  },
-  {
-    _id: 'A8',
-    name: 'A8',
-    isReserved: false,
-    isAvailable: false,
-  },
-  {
-    _id: 'A9',
-    name: 'A9',
-    isReserved: false,
-    isAvailable: true,
-  },
-  {
-    _id: 'A10',
-    name: 'A10',
-    isReserved: false,
-    isAvailable: true,
-  },
-];
 
 const ParkingSession = () => {
   const route = useRoute<any>();
@@ -169,12 +107,3 @@ const ParkingSession = () => {
 
 export default ParkingSession;
 
-{
-  /* <Box>
-  {
-    parkingLots.map(parkingLot => {
-
-    })
-  }
-</Box> */
-}

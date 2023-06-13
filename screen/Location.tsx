@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {PermissionsAndroid} from 'react-native';
+import React, {useState, useEffect,useCallback} from 'react';
+import {RefreshControl,ScrollView,PermissionsAndroid} from 'react-native';
 import {
   NativeBaseProvider,
   Box,
@@ -7,37 +7,45 @@ import {
   VStack,
   HStack,
   Spinner,
+  Pressable,
 } from 'native-base';
 import MapView, {Marker} from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import axios from 'axios';
+import {useRoute, useNavigation} from '@react-navigation/native';
 
 const Location = () => {
+  const navigation = useNavigation<any>();
+  const [etaDistances, setEtaDistances] = useState<any>([]);
+
   type Location = {
     latitude: number;
     longitude: number;
   };
+
+  type Building = [
+    {
+      _id: string;
+      name: string;
+      latitude: number;
+      longitude: number;
+    },
+  ];
 
   const [currentLocation, setCurrentLocation] = useState<Location>({
     latitude: 0,
     longitude: 0,
   });
 
-  type Building = [{
-    _id: string;
-    name: string;
-    latitude: number;
-    longitude: number;
-  }]
+  const [buildings, setBuildings] = useState<Building>([
+    {
+      _id: '',
+      name: '',
+      latitude: 0,
+      longitude: 0,
+    },
+  ]);
 
-  const [buildings, setBuildings] = useState<Building>([{
-    _id: "",
-    name: "",
-    latitude: 0,
-    longitude: 0,
-  }]);
-
-  const [etaDistances, setEtaDistances] = useState<any>([]);
 
   useEffect(() => {
     axios
@@ -51,10 +59,8 @@ const Location = () => {
       });
   }, []);
 
-  console.log(buildings);
-
   useEffect(() => {
-    const requestLocationPermission = async ()  => {
+    const requestLocationPermission = async () => {
       try {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
@@ -84,21 +90,14 @@ const Location = () => {
       for (const building of buildings) {
         try {
           const response = await axios.get(
-            `https://maps.googleapis.com/maps/api/directions/json?origin=${currentLocation.latitude},${currentLocation.longitude}&destination=${building.latitude},${building.longitude}&key=AIzaSyC5SD9ibmsRme7-gSoPKbD83CCznYox76Q`
+            `https://maps.googleapis.com/maps/api/directions/json?origin=${currentLocation.latitude},${currentLocation.longitude}&destination=${building.latitude},${building.longitude}&key=AIzaSyC5SD9ibmsRme7-gSoPKbD83CCznYox76Q`,
           );
-
-          const { duration, distance } = response.data.routes[0].legs[0];
-
+          const {duration, distance} = response.data.routes[0].legs[0];
           const eta = duration.text;
           const distanceText = distance.text;
-
-        
-            results.push({ eta, distanceText });
-        
-          console.log(results)
-
+          results.push({eta, distanceText});
         } catch (error) {
-          results.push({distanceText:"0 km", eta:"0 min"});
+          results.push({distanceText: '0 km', eta: '0 min'});
           // console.error('Error:', error);
         }
       }
@@ -109,7 +108,6 @@ const Location = () => {
     fetchEtaDistances();
   }, [buildings]);
 
-
   return (
     <VStack bg="#003572" height="100%">
       <Box mt={5}>
@@ -117,27 +115,29 @@ const Location = () => {
           Locations
         </Text>
       </Box>
+      <Pressable onPress={() => navigation.navigate('Maps', {})}>
       {buildings.map((building: any, index: any) => (
-        <Box
-          key={building._id}
-          mt={4}
-          bgColor="white"
-          justifyContent={'space-between'}
-          p={5}
-          mx={5}
-          borderRadius={20}>
-          <VStack space={4}>
-            <HStack justifyContent={'space-between'}>
-              <Text fontWeight="bold" flexShrink={1}>
-                To {building.name}
-              </Text>
-              <Text>{etaDistances[index]?.distanceText} </Text>
-            </HStack>
-            <Text> {etaDistances[index]?.eta} </Text>
-          </VStack>
-        </Box>
+          <Box
+            key={building._id}
+            mt={4}
+            bgColor="white"
+            justifyContent={'space-between'}
+            p={5}
+            mx={5}
+            borderRadius={20}>
+            <VStack space={4}>
+              <HStack justifyContent={'space-between'}>
+                <Text fontWeight="bold" flexShrink={1}>
+                  To {building.name}
+                </Text>
+                <Text>{etaDistances[index]?.distanceText} </Text>
+              </HStack>
+              <Text> {etaDistances[index]?.eta} </Text>
+            </VStack>
+          </Box>
       ))}
-
+      </Pressable>
+      
       {currentLocation.latitude && currentLocation.longitude != 0 ? (
         <MapView
           style={{flex: 1}}
