@@ -10,8 +10,9 @@ import ParkingSession from './screen/ParkingSession';
 import Maps from './screen/Map';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { NativeBaseProvider, Box, Text } from 'native-base';
-import { faHome,faQrcode,faLocationPin,faUser,faBell,faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faHome,faQrcode,faLocationPin,faUser,faBell,faSearch,faTicket } from '@fortawesome/free-solid-svg-icons';
 import { createStackNavigator } from '@react-navigation/stack';
+import Reservation from './screen/Reservation';
 
 const Tab = createBottomTabNavigator();
 
@@ -60,6 +61,9 @@ const App: React.FC =() => {
                 case 'Home':
                   icon = faHome;
                   break;
+                case 'Reserve':
+                  icon = faTicket;
+                  break;
                 case 'Location':
                   icon = faLocationPin;
                   break;
@@ -77,6 +81,7 @@ const App: React.FC =() => {
           })}
           >
         <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="Reserve" component={Reservation} />
         <Tab.Screen name="Scan QR" component={QRStackNavigator} />
         <Tab.Screen name="Location" component={LocationStackNavigator}/>
         <Tab.Screen name="Profile" component={ProfileStackNavigator}/> 

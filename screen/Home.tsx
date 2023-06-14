@@ -31,8 +31,7 @@ const Home = () => {
     }, 2000);
 
   return (
-    <NativeBaseProvider>
-      <VStack bg="#003572" height="100%">
+      <VStack bg="#003572" flex={1}>
         <Box mt={5}>
           <HStack space={3} justifyContent="space-between" alignItems="center">
             <Text fontSize="20" fontWeight="bold" ml={5} color="white">
@@ -110,7 +109,6 @@ const Home = () => {
           </Center>
         </ScrollView>
       </VStack>
-    </NativeBaseProvider>
   );
 };
 

@@ -1,5 +1,5 @@
-import React, {useState, useEffect,useCallback} from 'react';
-import {RefreshControl,ScrollView,PermissionsAndroid} from 'react-native';
+import React, {useState, useEffect, useCallback} from 'react';
+import {RefreshControl, ScrollView, PermissionsAndroid} from 'react-native';
 import {
   NativeBaseProvider,
   Box,
@@ -9,7 +9,6 @@ import {
   Spinner,
   Pressable,
 } from 'native-base';
-import MapView, {Marker} from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import axios from 'axios';
 import {useRoute, useNavigation} from '@react-navigation/native';
@@ -46,7 +45,6 @@ const Location = () => {
     },
   ]);
 
-
   useEffect(() => {
     axios
       // .get("http://192.168.1.110:3500/carparkbuilding")
@@ -58,6 +56,8 @@ const Location = () => {
         console.error('Error fetching data:', error);
       });
   }, []);
+
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -84,29 +84,37 @@ const Location = () => {
     requestLocationPermission();
   }, []);
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
+
   useEffect(() => {
     const fetchEtaDistances = async () => {
-      const results = [];
-      for (const building of buildings) {
-        try {
-          const response = await axios.get(
-            `https://maps.googleapis.com/maps/api/directions/json?origin=${currentLocation.latitude},${currentLocation.longitude}&destination=${building.latitude},${building.longitude}&key=AIzaSyC5SD9ibmsRme7-gSoPKbD83CCznYox76Q`,
-          );
-          const {duration, distance} = response.data.routes[0].legs[0];
-          const eta = duration.text;
-          const distanceText = distance.text;
-          results.push({eta, distanceText});
-        } catch (error) {
-          results.push({distanceText: '0 km', eta: '0 min'});
-          // console.error('Error:', error);
+      if (currentLocation) {
+        const results = [];
+        for (const building of buildings) {
+          try {
+            const response = await axios.get(
+              `https://maps.googleapis.com/maps/api/directions/json?origin=${currentLocation.latitude},${currentLocation.longitude}&destination=${building.latitude},${building.longitude}&key=AIzaSyC5SD9ibmsRme7-gSoPKbD83CCznYox76Q`,
+            );
+
+            const {duration, distance} = response.data.routes[0].legs[0];
+            const eta = duration.text;
+            const distanceText = distance.text;
+            console.log({eta, distanceText});
+            results.push({eta, distanceText});
+          } catch (error) {
+            // console.error('Error:', error);
+          }
         }
+        setEtaDistances(results);
       }
-
-      setEtaDistances(results);
     };
-
     fetchEtaDistances();
-  }, [buildings]);
+  }, [currentLocation, buildings]);
 
   return (
     <VStack bg="#003572" height="100%">
@@ -115,49 +123,40 @@ const Location = () => {
           Locations
         </Text>
       </Box>
-      <Pressable onPress={() => navigation.navigate('Maps', {})}>
-      {buildings.map((building: any, index: any) => (
-          <Box
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }>
+        {buildings.map((building: any, index: any) => (
+          <Pressable
             key={building._id}
-            mt={4}
-            bgColor="white"
-            justifyContent={'space-between'}
-            p={5}
-            mx={5}
-            borderRadius={20}>
-            <VStack space={4}>
-              <HStack justifyContent={'space-between'}>
-                <Text fontWeight="bold" flexShrink={1}>
-                  To {building.name}
+            onPress={() =>
+              navigation.navigate('Maps', {currentLocation, building})
+            }>
+            <Box
+              mt={4}
+              bgColor="white"
+              justifyContent={'space-between'}
+              p={5}
+              mx={5}
+              borderRadius={20}>
+              <VStack space={4}>
+                <HStack justifyContent={'space-between'}>
+                  <Text fontWeight="bold" flexShrink={1}>
+                    To {building.name}
+                  </Text>
+                  <Text>
+                    {etaDistances[index]?.distanceText} 
+                  </Text>
+                </HStack>
+                <Text>
+                  {etaDistances[index]?.eta} 
                 </Text>
-                <Text>{etaDistances[index]?.distanceText} </Text>
-              </HStack>
-              <Text> {etaDistances[index]?.eta} </Text>
-            </VStack>
-          </Box>
-      ))}
-      </Pressable>
-      
-      {currentLocation.latitude && currentLocation.longitude != 0 ? (
-        <MapView
-          style={{flex: 1}}
-          initialRegion={{
-            latitude: currentLocation.latitude,
-            longitude: currentLocation.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}>
-          <Marker
-            coordinate={{
-              latitude: currentLocation.latitude,
-              longitude: currentLocation.longitude,
-            }}
-            title="Marker"
-          />
-        </MapView>
-      ) : (
-        <Spinner />
-      )}
+              </VStack>
+            </Box>
+          </Pressable>
+        ))}
+      </ScrollView>
     </VStack>
   );
 };
