@@ -16,18 +16,36 @@ import axios from 'axios';
 
 const Home = () => {
   const [parkingLots, setParkingLots] = useState(0);
+  const [availableReservedParking, setAvailableReservedParking] = useState(0);
 
+  const getAvailableParkingLots =() =>{
+    axios
+    // .get('http://192.168.1.110:3500/availableParkingLots')
+    .get('http://172.20.10.4:3500/availableParkingLots')
+    .then(response => {
+      // console.log(response.data.length)
+      setParkingLots(response.data.length);
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+    });
+  }
+
+  const getAvailableReservedParkingLots =() =>{
+    axios
+    // .get('http://192.168.1.110:3500/availableRerservedParkingLots')
+    .get('http://172.20.10.4:3500/availableRerservedParkingLots')
+    .then(response => {
+      // console.log(response.data.length)
+      setAvailableReservedParking(response.data.length);
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+    });
+  }
   setInterval(() => {
-      axios
-        // .get('http://192.168.1.110:3500/availableParkingLots')
-        .get('http://172.20.10.4:3500/availableParkingLots')
-        .then(response => {
-          // console.log(response.data.length)
-          setParkingLots(response.data.length);
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-        });
+     getAvailableParkingLots()
+     getAvailableReservedParkingLots()
     }, 2000);
 
   return (
@@ -88,7 +106,7 @@ const Home = () => {
                   <Text p="4">Available slot for reservation: </Text>
                   <HStack>
                     <Text fontSize="100" fontWeight="bold" pl="4">
-                      1{' '}
+                      {availableReservedParking}{' '}
                     </Text>
                     <Text fontSize="70" fontWeight="bold" color="grey">
                       of 3

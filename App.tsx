@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Home from './screen/Home';
+import Login from './screen/Login';
 import Location from './screen/Location';
 import Profile from './screen/Profile';
 import ScanQR from './screen/ScanQR';
@@ -13,6 +14,7 @@ import { NativeBaseProvider, Box, Text } from 'native-base';
 import { faHome,faQrcode,faLocationPin,faUser,faBell,faSearch,faTicket } from '@fortawesome/free-solid-svg-icons';
 import { createStackNavigator } from '@react-navigation/stack';
 import Reservation from './screen/Reservation';
+import SignUp from './screen/SignUp';
 
 const Tab = createBottomTabNavigator();
 
@@ -38,6 +40,7 @@ function ProfileStackNavigator() {
     </ProfileStack.Navigator>
   );
 }
+const Stack = createStackNavigator();
 
 const QRStack = createStackNavigator();
 function QRStackNavigator() {
@@ -49,11 +52,8 @@ function QRStackNavigator() {
   );
 }
 
-const App: React.FC =() => {
-  return (
-    <NativeBaseProvider>
-     <NavigationContainer>
-      <Tab.Navigator 
+const MainNavigator = () => (
+  <Tab.Navigator 
           screenOptions={({ route }) => ({
             tabBarIcon: ({ color, size }) => {
               let icon;
@@ -79,13 +79,24 @@ const App: React.FC =() => {
               return <FontAwesomeIcon icon={icon} color={color} size={size} />;
             }, headerShown:false, tabBarActiveBackgroundColor:"black"
           })}
-          >
+          >    
         <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="Reserve" component={Reservation} />
         <Tab.Screen name="Scan QR" component={QRStackNavigator} />
         <Tab.Screen name="Location" component={LocationStackNavigator}/>
         <Tab.Screen name="Profile" component={ProfileStackNavigator}/> 
       </Tab.Navigator>
+);
+
+const App: React.FC =() => {
+  return (
+    <NativeBaseProvider>
+     <NavigationContainer>
+     <Stack.Navigator screenOptions={{headerShown:false}}>
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="SignUp" component={SignUp} />
+        <Stack.Screen name="Main" component={MainNavigator} />
+      </Stack.Navigator>
     </NavigationContainer>
       </NativeBaseProvider>
   )
