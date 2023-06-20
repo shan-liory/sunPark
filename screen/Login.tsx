@@ -39,6 +39,8 @@ const Login = () => {
 
   const submit = () => {
     console.log("hello", "isClicked")
+    navigation.replace('Main', {
+    });
     // try{
     //   await axios.post("http://172.20.10.4:3500/login/user",{
     //     form
@@ -106,19 +108,29 @@ const Login = () => {
               Forgot Password?
             </Link> */}
           </FormControl>
-          <Button mt="10" colorScheme={"indigo"} onPress={onPress}>
-            Sign in
+          <Button
+            mt="10"
+            borderRadius="full"
+            onPress={onPress}
+            width={"100%"}
+            variant={'solid'}
+            _text={{
+              color: 'white',
+            }}
+            backgroundColor={'#F79520'}>
+            Log In
           </Button>
 
           <Link onPress={toSignUpScreen}
           _text={{
                 fontSize: "xs",
                 fontWeight: "500",
-                color: "indigo.500",
+                color: "white",
               }}
               alignSelf="center"
               mt="5"
-              > Don't have an account yet? Here </Link>
+              > Don't have an account yet? 
+              Here </Link>
           </Box>
     </VStack>
     

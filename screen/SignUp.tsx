@@ -8,11 +8,13 @@ import {
   HStack,
   FormControl,
   Input,
-  Center,
+  useToast,
   Link,
   Pressable,
   Image,
+  ScrollView,
 } from 'native-base';
+import { TextInput } from 'react-native';
 import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
@@ -20,106 +22,206 @@ import {faEye, faEyeSlash} from '@fortawesome/free-solid-svg-icons';
 
 const SignUp = () => {
   const navigation = useNavigation<any>();
+  const toast = useToast();
   const [show, setShow] = useState(false);
+  const [show2, setShow2] = useState(false);
   const [form, setForm] = useState({
-    email: "",
-    password: "",
+    name: '',
+    phone: '',
+    email: '',
+    password: '',
+    cpassword: '',
+    plateNumber: '',
   });
-  const onPress = () => {
-    console.log("sign Up")
 
-   }
+  const toLoginScreen = () => {
+    console.log('is Clicked');
+    navigation.navigate('Login', {});
+  };
 
-   const toLoginScreen = () => {
-    console.log("is Clicked")
-    navigation.navigate('Login', {
-    });
-   }
-
-  const submit = () => {
-    console.log("hello", "isClicked")
-    // try{
-    //   await axios.post("http://172.20.10.4:3500/login/user",{
-    //     form
-    //   })
-    //   .then(res =>{
-    //     if (res.data.message == "LoginPass"){
-    //     //   localStorage.setItem('username',res.data.username);
-    //     //   localStorage.setItem('level',res.data.level);
-    //       navigation.navigate("Home")
-    //     }
-    //     else if (res.data == "No user"){
-    //     //   toast.error("Email is not registered.")
-    //     }
-    //     else if (res.data == "loginFail"){
-    //     //   toast.error("Wrong Credentials");
-    //     }
-    //     else if (res.data == "fail"){
-    //     //   toast.error("Something is wrong!");
-    //     }
-    //   })
-    //   .catch(e => {
-    //     console.log(e)
-    //   })
-    // }
-    // catch(e){
-    //   console.log(e)
-    // }
-  }
+    const submit = async(e:any) => {
+      e.preventDefault()
+      const validRegex = /[0-9]+@imail\.sunway\.edu\.my/i;
+      try{
+        if (form.name == "" || form.email == "" || form.plateNumber == ""){
+          toast.show({
+            description: "Please fill in the required fields."
+          })
+        }
+        else if (form.phone.length >= 12 || form.phone.length < 10){
+          toast.show({
+            description: "Please re-enter your phone number."
+          })
+        }
+        else if (validRegex.test(form.email) == false){
+          toast.show({
+            description: "Please fill in valid imail address."
+          })
+        }
+       else if (form.password.length < 6){
+        toast.show({
+          description: "Password must have at least 6 characters."
+        })
+       }
+       else if (form.password != form.cpassword){
+        toast.show({
+          description: "Password doesn't match."
+        })
+        }
+        else{
+          await axios.post("http://172.20.10.4:3500/sign-up/user",{
+            form
+          })
+          .then(res=>{
+            if(res.data == "exist"){
+              toast.show({
+                description: "Email was registered"
+              })
+            }
+            else if (res.data="Not Exist"){
+              navigation.replace("Main")
+              console.log("Successfully registered!")
+            }
+          })
+        }
+      }
+      catch(e){
+        console.log(e)
+      }
+    }
 
   return (
     <VStack bg="#003572" height="100%">
-        <Box alignItems={"center"} p={10}> 
-        <Image alt="logo" source={require('../asset/logo.png')} size={100} />
-          <FormControl isRequired  >
-            <FormControl.Label mb={2} >Email ID</FormControl.Label>
+      {/* <Image alt="logo" source={require('../asset/logo.png')} size={100} /> */}
+      <Box p={5} mt={2}>
+        <HStack justifyContent={'space-between'}>
+          <Box bg={'#F79520'} height={2} width={2} borderRadius={50}></Box>
+          <Box bg={'#F79520'} height={2} width={2} borderRadius={50}></Box>
+        </HStack>
+        <HStack justifyContent={'space-between'} alignItems={'center'}>
+          <Box bg={'#F79520'} height={1.5} flex={1}></Box>
+          <Text color={'white'} fontWeight="bold" ml={2} mr={2} fontSize={20}>
+            SIGN UP
+          </Text>
+          <Box bg={'#F79520'} height={1.5} flex={1}></Box>
+        </HStack>
+      </Box>
+      <ScrollView>
+        <Box alignItems={'center'} pl={5} pr={5} pt={5}>
+          <FormControl isRequired>
+            <FormControl.Label >Name</FormControl.Label>
             <Input
-             style={{ color: '#ffffff' }}
-              placeholder="example@email.com"
-              onChangeText={(value) => setForm({ ...form, email: value })}
+              variant="underlined"
+              style={{color: '#ffffff'}}
+              onChangeText={value => setForm({...form, name: value})}
             />
           </FormControl>
           <FormControl isRequired>
-            <FormControl.Label mt={5} mb={2}>Password</FormControl.Label>
+            <FormControl.Label mt={5}>
+              Phone Number{' '}
+            </FormControl.Label>
+            <TextInput
+              // variant="underlined"
+              keyboardType="number-pad"
+              style={{color: '#ffffff', borderBottomColor: '#ffffff',
+              borderBottomWidth: 1,}}
+              onChangeText={value => setForm({...form, phone: value})}
+            />
+          </FormControl>
+          <FormControl isRequired>
+            <FormControl.Label mt={5} mb={2}>
+              Car Plate Number
+            </FormControl.Label>
             <Input
-             style={{ color: '#ffffff' }}
-              type={show ? "text" : "password"} onChangeText={value => setForm({...form, password:value})}
+              variant="underlined"
+              style={{color: '#ffffff'}}
+              placeholder=""
+              onChangeText={value => setForm({...form, plateNumber: value})}
+            />
+          </FormControl>
+          <FormControl isRequired>
+            <FormControl.Label mt={5} mb={2}>
+              Email Address
+            </FormControl.Label>
+            <Input
+              variant="underlined"
+              style={{color: '#ffffff'}}
+              placeholder="example@imail.sunway.edu.my"
+              onChangeText={value => setForm({...form, email: value})}
+            />
+          </FormControl>
+          <FormControl isRequired>
+            <FormControl.Label mt={5} mb={2}>
+              Password
+            </FormControl.Label>
+            <Input
+              variant="underlined"
+              style={{color: '#ffffff'}}
+              type={show ? 'text' : 'password'}
+              onChangeText={value => setForm({...form, password: value})}
               InputRightElement={
                 <Pressable onPress={() => setShow(!show)}>
-                  <FontAwesomeIcon icon={show ? faEye : faEyeSlash} size={20} style={{ marginRight: 10, color: 'grey' }}
+                  <FontAwesomeIcon
+                    icon={show ? faEye : faEyeSlash}
+                    size={20}
+                    style={{marginRight: 10, color: 'grey'}}
                   />
                 </Pressable>
               }
               placeholder="Password"
             />
-
-            {/* <Link
-              _text={{
-                fontSize: "xs",
-                fontWeight: "500",
-                color: "indigo.500",
-              }}
-              alignSelf="flex-end"
-              mt="1"
-            >
-              Forgot Password?
-            </Link> */}
           </FormControl>
-          <Button mt="10" colorScheme={"indigo"} onPress={onPress}>
+          <FormControl isRequired>
+            <FormControl.Label mt={5} mb={2}>
+              Confirm Password
+            </FormControl.Label>
+            <Input
+              style={{color: '#ffffff'}}
+              variant="underlined"
+              type={show2 ? 'text' : 'password'}
+              onChangeText={value => setForm({...form, cpassword: value})}
+              InputRightElement={
+                <Pressable onPress={() => setShow2(!show2)}>
+                  <FontAwesomeIcon
+                    icon={show2 ? faEye : faEyeSlash}
+                    size={20}
+                    style={{marginRight: 10, color: 'grey'}}
+                  />
+                </Pressable>
+              }
+              placeholder="Confirm Password"
+            />
+          </FormControl>
+
+          <Button
+            mt="10"
+            borderRadius="full"
+            onPress={submit}
+            width={'90%'}
+            variant={'solid'}
+            _text={{
+              color: 'white',
+            }}
+            backgroundColor={'#F79520'}>
             Sign Up
           </Button>
-          <Text mt="5" color={"indigo.500"}>Already have an account?</Text>
+          <Text mt="5" color={"white"}>
+            Already have an account?
+          </Text>
 
-          <Link onPress={toLoginScreen}
-          _text={{
-                fontSize: "xs",
-                fontWeight: "500",
-                color: "indigo.500",
-              }}
-              >Sign In </Link>
-          </Box>
+          <Link
+            onPress={toLoginScreen}
+            mb={3}
+            _text={{
+              fontSize: 'sm',
+              fontWeight: '500',
+              color: '#F79520',
+            }}>
+            Log In
+          </Link>
+        </Box>
+      </ScrollView>
     </VStack>
-    
   );
 };
 

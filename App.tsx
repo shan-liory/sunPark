@@ -10,7 +10,7 @@ import EditProfile from './screen/EditProfile';
 import ParkingSession from './screen/ParkingSession';
 import Maps from './screen/Map';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { NativeBaseProvider, Box, Text } from 'native-base';
+import { NativeBaseProvider, Box, Text, extendTheme, FormControl } from 'native-base';
 import { faHome,faQrcode,faLocationPin,faUser,faBell,faSearch,faTicket } from '@fortawesome/free-solid-svg-icons';
 import { createStackNavigator } from '@react-navigation/stack';
 import Reservation from './screen/Reservation';
@@ -88,9 +88,24 @@ const MainNavigator = () => (
       </Tab.Navigator>
 );
 
+const theme = extendTheme({
+  components: {
+    FormControlLabel:{
+      baseStyle: {
+          flexDirection: 'row',
+          justifyContent: 'flex-start',
+          _text: {
+            fontSize: 'sm',
+            color: 'white',
+          },
+    }
+  }
+  },
+});
+
 const App: React.FC =() => {
   return (
-    <NativeBaseProvider>
+    <NativeBaseProvider theme={theme}>
      <NavigationContainer>
      <Stack.Navigator screenOptions={{headerShown:false}}>
         <Stack.Screen name="Login" component={Login} />

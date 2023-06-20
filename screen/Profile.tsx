@@ -6,6 +6,7 @@ import { faEdit } from '@fortawesome/free-solid-svg-icons';
 
 
 
+
 const Profile = () => {
   const [userName, setUserName] = useState('AboutReact');
   const navigation = useNavigation<any>();
@@ -15,6 +16,10 @@ const Profile = () => {
       userName,
     });
   };
+
+  const onLogOut = () =>{
+    console.log("Log out")
+  }
   
 
   return (
@@ -57,11 +62,13 @@ const Profile = () => {
          <Text fontSize="30" fontWeight="bold" color="white"> XX </Text>
          </VStack>
          <VStack borderBottomWidth={1} borderTopWidth={1} borderColor="white" mt={20} pb={2} pt={2}>
-         <Text fontSize="25" color="white">Change Password {'>'}</Text>
+         <Text fontSize="20" color="white">Change Password {'>'}</Text>
          </VStack>
-         <VStack borderColor="white">
-         <Text fontSize="25" color="white">Log Out </Text>
+         <Pressable onPress={onLogOut}>
+         <VStack borderColor="white" mb={3}>
+         <Text fontSize="20" color="#F79520">Log Out </Text>
          </VStack>
+         </Pressable>
         </VStack>
         </Center>
       </ScrollView>
