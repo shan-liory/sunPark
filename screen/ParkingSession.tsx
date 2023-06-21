@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import {
-  NativeBaseProvider,
   Box,
   Text,
   Button,
@@ -27,8 +26,8 @@ const ParkingSession = () => {
   const [lots, setLots] = useState<Array<ParkingLot>>();
   useEffect(() => {
     axios
-      // .get('http://192.168.1.110:3500/parkingLotsStatus')
-      .get('http://172.20.10.4:3500/parkingLotsStatus')
+      .get('http://192.168.1.111:3500/parkingLotsStatus')
+      //.get('http://172.20.10.4:3500/parkingLotsStatus')
       .then(response => {
         setLots(response.data);
       })
@@ -41,12 +40,12 @@ const ParkingSession = () => {
 
   const onPressEndSession = () => {
     axios
-      // .post('http://192.168.1.110:3500/parkingQrCode/endSession', {
-      //   parkingLot: route.params.parkedLotId,
-      // })
-      .post('http://172.20.10.4:3500/parkingQrCode/endSession', {
+      .post('http://192.168.1.111:3500/parkingQrCode/endSession', {
         parkingLot: route.params.parkedLotId,
       })
+      // .post('http://172.20.10.4:3500/parkingQrCode/endSession', {
+      //   parkingLot: route.params.parkedLotId,
+      // })
       .then(res => {
         if (res.data.message === 'success') {
           console.log('hehe');

@@ -3,15 +3,10 @@ import { Linking } from 'react-native';
 import MapView, {Polyline,Marker} from 'react-native-maps';
 import axios from 'axios';
 import {
-  NativeBaseProvider,
   Box,
   Text,
   Button,
   Spinner,
-  HStack,
-  VStack,
-  Center,
-  FlatList,
 } from 'native-base';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import MapViewDirections from 'react-native-maps-directions';

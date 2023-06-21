@@ -1,6 +1,5 @@
 import React, {useState, useEffect} from 'react';
 import {
-  NativeBaseProvider,
   Box,
   Text,
   ScrollView,
@@ -44,8 +43,8 @@ const Reservation = () => {
 
   useEffect(() => {
     axios
-      // .get("http://192.168.1.110:3500/reservedparking")
-      .get('http://172.20.10.4:3500/reservedparking')
+      .get("http://192.168.1.111:3500/reservedparking")
+      // .get('http://172.20.10.4:3500/reservedparking')
       .then(response => {
         setReservedParking(response.data);
       })

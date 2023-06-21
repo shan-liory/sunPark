@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  NativeBaseProvider,
   Box,
   Text,
   Button,
@@ -10,11 +10,12 @@ import {
   Input,
   useToast,
   Link,
+  Spinner,
   Pressable,
   Image,
   ScrollView,
 } from 'native-base';
-import { TextInput } from 'react-native';
+import {TextInput} from 'react-native';
 import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
@@ -24,6 +25,7 @@ const SignUp = () => {
   const navigation = useNavigation<any>();
   const toast = useToast();
   const [show, setShow] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [show2, setShow2] = useState(false);
   const [form, setForm] = useState({
     name: '',
@@ -31,7 +33,7 @@ const SignUp = () => {
     email: '',
     password: '',
     cpassword: '',
-    plateNumber: '',
+    carPlate: '',
   });
 
   const toLoginScreen = () => {
@@ -39,56 +41,63 @@ const SignUp = () => {
     navigation.navigate('Login', {});
   };
 
-    const submit = async(e:any) => {
-      e.preventDefault()
-      const validRegex = /[0-9]+@imail\.sunway\.edu\.my/i;
-      try{
-        if (form.name == "" || form.email == "" || form.plateNumber == ""){
-          toast.show({
-            description: "Please fill in the required fields."
-          })
-        }
-        else if (form.phone.length >= 12 || form.phone.length < 10){
-          toast.show({
-            description: "Please re-enter your phone number."
-          })
-        }
-        else if (validRegex.test(form.email) == false){
-          toast.show({
-            description: "Please fill in valid imail address."
-          })
-        }
-       else if (form.password.length < 6){
+  const submit = async (e: any) => {
+    e.preventDefault();
+    
+    const validRegex = /[0-9]+@imail\.sunway\.edu\.my/i;
+    try {
+      if (form.name == '' || form.email == '' || form.carPlate == '') {
         toast.show({
-          description: "Password must have at least 6 characters."
-        })
-       }
-       else if (form.password != form.cpassword){
+          description: 'Please fill in the required fields.',
+        });
+      } else if (form.phone.length >= 12 || form.phone.length < 10) {
         toast.show({
-          description: "Password doesn't match."
-        })
-        }
-        else{
-          await axios.post("http://172.20.10.4:3500/sign-up/user",{
-            form
+          description: 'Please re-enter your phone number.',
+        });
+      } else if (validRegex.test(form.email) == false) {
+        toast.show({
+          description: 'Please fill in valid imail address.',
+        });
+      } else if (form.password.length < 6) {
+        toast.show({
+          description: 'Password must have at least 6 characters.',
+        });
+      } else if (form.password != form.cpassword) {
+        toast.show({
+          description: "Password doesn't match.",
+        });
+      } else {
+        setIsLoading(true);
+        await axios
+          // .post('http://172.20.10.4:3500/sign-up/user', {
+          //   form,
+          // })
+          .post('http://192.168.1.111:3500/sign-up/user', {
+            form,
           })
-          .then(res=>{
-            if(res.data == "exist"){
+          .then(res => {
+            if (res.data == 'exist') {
               toast.show({
-                description: "Email was registered"
-              })
+                description: 'Email was registered',
+              });
+            } else if ((res.data.message = 'Not Exist')) {
+              //setItem
+              AsyncStorage.setItem('name',res.data.name);
+              AsyncStorage.setItem('level',JSON.stringify(res.data.level));
+              AsyncStorage.setItem('carPlate',res.data.carPlate);
+              AsyncStorage.setItem('email',res.data.email)
+              AsyncStorage.setItem('phone', res.data.phone)
+              // AsyncStorage.setItem('parkingLotId',res.data.parkingLotId);
+              navigation.replace('Main',{});
+              console.log('Successfully registered!');
+              setIsLoading(false);
             }
-            else if (res.data="Not Exist"){
-              navigation.replace("Main")
-              console.log("Successfully registered!")
-            }
-          })
-        }
+          });
       }
-      catch(e){
-        console.log(e)
-      }
+    } catch (e) {
+      console.log(e);
     }
+  };
 
   return (
     <VStack bg="#003572" height="100%">
@@ -109,7 +118,7 @@ const SignUp = () => {
       <ScrollView>
         <Box alignItems={'center'} pl={5} pr={5} pt={5}>
           <FormControl isRequired>
-            <FormControl.Label >Name</FormControl.Label>
+            <FormControl.Label>Name</FormControl.Label>
             <Input
               variant="underlined"
               style={{color: '#ffffff'}}
@@ -117,14 +126,15 @@ const SignUp = () => {
             />
           </FormControl>
           <FormControl isRequired>
-            <FormControl.Label mt={5}>
-              Phone Number{' '}
-            </FormControl.Label>
+            <FormControl.Label mt={5}>Phone Number </FormControl.Label>
             <TextInput
               // variant="underlined"
               keyboardType="number-pad"
-              style={{color: '#ffffff', borderBottomColor: '#ffffff',
-              borderBottomWidth: 1,}}
+              style={{
+                color: '#ffffff',
+                borderBottomColor: '#ffffff',
+                borderBottomWidth: 1,
+              }}
               onChangeText={value => setForm({...form, phone: value})}
             />
           </FormControl>
@@ -136,7 +146,7 @@ const SignUp = () => {
               variant="underlined"
               style={{color: '#ffffff'}}
               placeholder=""
-              onChangeText={value => setForm({...form, plateNumber: value})}
+              onChangeText={value => setForm({...form, carPlate: value})}
             />
           </FormControl>
           <FormControl isRequired>
@@ -193,7 +203,7 @@ const SignUp = () => {
             />
           </FormControl>
 
-          <Button
+          {isLoading ? <Spinner/> : <Button
             mt="10"
             borderRadius="full"
             onPress={submit}
@@ -204,8 +214,8 @@ const SignUp = () => {
             }}
             backgroundColor={'#F79520'}>
             Sign Up
-          </Button>
-          <Text mt="5" color={"white"}>
+          </Button>}
+          <Text mt="5" color={'white'}>
             Already have an account?
           </Text>
 

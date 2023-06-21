@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {RefreshControl, ScrollView, PermissionsAndroid} from 'react-native';
 import {
-  NativeBaseProvider,
   Box,
   Text,
   VStack,
@@ -47,8 +46,8 @@ const Location = () => {
 
   useEffect(() => {
     axios
-      // .get("http://192.168.1.110:3500/carparkbuilding")
-      .get('http://172.20.10.4:3500/carparkbuilding')
+      .get("http://192.168.1.111:3500/carparkbuilding")
+      // .get('http://172.20.10.4:3500/carparkbuilding')
       .then(response => {
         setBuildings(response.data);
       })
@@ -57,7 +56,6 @@ const Location = () => {
       });
   }, []);
 
-  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -84,13 +82,6 @@ const Location = () => {
     requestLocationPermission();
   }, []);
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  }, []);
-
   useEffect(() => {
     const fetchEtaDistances = async () => {
       if (currentLocation) {
@@ -104,7 +95,7 @@ const Location = () => {
             const {duration, distance} = response.data.routes[0].legs[0];
             const eta = duration.text;
             const distanceText = distance.text;
-            console.log({eta, distanceText});
+            // console.log({eta, distanceText});
             results.push({eta, distanceText});
           } catch (error) {
             // console.error('Error:', error);
@@ -123,10 +114,7 @@ const Location = () => {
           Locations
         </Text>
       </Box>
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }>
+      <ScrollView>
         {buildings.map((building: any, index: any) => (
           <Pressable
             key={building._id}

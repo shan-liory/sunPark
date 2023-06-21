@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {NativeBaseProvider, Box, Text, Pressable, Center,Modal,Button,HStack} from 'native-base';
+import { Box, Text, Pressable, Center,Modal,Button,HStack} from 'native-base';
 import axios from 'axios';
 import {RNCamera} from 'react-native-camera';
 import QRCodeScanner from 'react-native-qrcode-scanner';
@@ -24,11 +24,12 @@ const ScanQR = () => {
   const onSuccess = (e: {data: string}) => {
       console.log(e.data);
       axios
-        // .post('http://192.168.1.110:3500/parkingQrCode/get', {parkingLot: e.data})
-        .post('http://172.20.10.4:3500/parkingQrCode/get', {parkingLot: e.data})
+        .post('http://192.168.1.111:3500/parkingQrCode/get', {parkingLot: e.data})
+        // .post('http://172.20.10.4:3500/parkingQrCode/get', {parkingLot: e.data})
         .then(res => {
           if (res.data.message === 'success') {
             console.log("success")
+            //setItem --> parkingLot
              navigation.navigate('ParkingSession', {
                 parkedLotId:e.data, parkedLotName:res.data.lot
               });
@@ -56,7 +57,6 @@ const ScanQR = () => {
   
 
   return (
-    <NativeBaseProvider>
       <Box bg="#003572" flex={1} alignContent="center">
       <Text fontSize="20" ml={5} fontWeight="bold" mt={5} color="white">
             Scan QR Code
@@ -74,8 +74,7 @@ const ScanQR = () => {
             cameraStyle={{width: '90%', marginLeft: 20, marginTop: 50}}
           />
         </Box>
-      </Box>
-      <Modal
+        <Modal
             isOpen={open}
             onClose={() => setOpen(false)}
             safeAreaTop={true}
@@ -127,7 +126,7 @@ const ScanQR = () => {
               </Modal.Footer>
             </Modal.Content>
           </Modal>
-    </NativeBaseProvider>
+      </Box>
   );
 };
 
