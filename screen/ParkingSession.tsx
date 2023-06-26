@@ -1,14 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import {
-  Box,
-  Text,
-  Button,
-  HStack,
-  VStack,
-  Center,
-  FlatList,
-} from 'native-base';
+import {Box, Text, Button, HStack, VStack, Center, FlatList} from 'native-base';
 import {useRoute, useNavigation} from '@react-navigation/native';
 
 type ParkingLot = {
@@ -18,7 +10,6 @@ type ParkingLot = {
   isAvailable: boolean;
 };
 
-
 const ParkingSession = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
@@ -26,8 +17,8 @@ const ParkingSession = () => {
   const [lots, setLots] = useState<Array<ParkingLot>>();
   useEffect(() => {
     axios
-      .get('http://192.168.1.111:3500/parkingLotsStatus')
-      //.get('http://172.20.10.4:3500/parkingLotsStatus')
+      //.get('http://192.168.1.111:3500/parkingLotsStatus')
+      .get('http://172.20.10.4:3500/parkingLotsStatus')
       .then(response => {
         setLots(response.data);
       })
@@ -36,16 +27,16 @@ const ParkingSession = () => {
       });
   }, []);
 
-  console.log(lots)
+  console.log(lots);
 
   const onPressEndSession = () => {
     axios
-      .post('http://192.168.1.111:3500/parkingQrCode/endSession', {
-        parkingLot: route.params.parkedLotId,
-      })
-      // .post('http://172.20.10.4:3500/parkingQrCode/endSession', {
+      // .post('http://192.168.1.111:3500/parkingQrCode/endSession', {
       //   parkingLot: route.params.parkedLotId,
       // })
+      .post('http://172.20.10.4:3500/parkingQrCode/endSession', {
+        parkingLot: route.params.parkedLotId,
+      })
       .then(res => {
         if (res.data.message === 'success') {
           console.log('hehe');
@@ -105,4 +96,3 @@ const ParkingSession = () => {
 };
 
 export default ParkingSession;
-

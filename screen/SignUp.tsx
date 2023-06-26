@@ -43,7 +43,7 @@ const SignUp = () => {
 
   const submit = async (e: any) => {
     e.preventDefault();
-    
+
     const validRegex = /[0-9]+@imail\.sunway\.edu\.my/i;
     try {
       if (form.name == '' || form.email == '' || form.carPlate == '') {
@@ -69,12 +69,12 @@ const SignUp = () => {
       } else {
         setIsLoading(true);
         await axios
-          // .post('http://172.20.10.4:3500/sign-up/user', {
-          //   form,
-          // })
-          .post('http://192.168.1.111:3500/sign-up/user', {
+          .post('http://172.20.10.4:3500/sign-up/user', {
             form,
           })
+          // .post('http://192.168.1.111:3500/sign-up/user', {
+          //   form,
+          // })
           .then(res => {
             if (res.data == 'exist') {
               toast.show({
@@ -82,13 +82,13 @@ const SignUp = () => {
               });
             } else if ((res.data.message = 'Not Exist')) {
               //setItem
-              AsyncStorage.setItem('name',res.data.name);
-              AsyncStorage.setItem('level',JSON.stringify(res.data.level));
-              AsyncStorage.setItem('carPlate',res.data.carPlate);
-              AsyncStorage.setItem('email',res.data.email)
-              AsyncStorage.setItem('phone', res.data.phone)
+              AsyncStorage.setItem('name', res.data.name);
+              AsyncStorage.setItem('level', JSON.stringify(res.data.level));
+              AsyncStorage.setItem('carPlate', res.data.carPlate);
+              AsyncStorage.setItem('email', res.data.email);
+              AsyncStorage.setItem('phone', res.data.phone);
               // AsyncStorage.setItem('parkingLotId',res.data.parkingLotId);
-              navigation.replace('Main',{});
+              navigation.replace('Main', {});
               console.log('Successfully registered!');
               setIsLoading(false);
             }
@@ -203,18 +203,22 @@ const SignUp = () => {
             />
           </FormControl>
 
-          {isLoading ? <Spinner/> : <Button
-            mt="10"
-            borderRadius="full"
-            onPress={submit}
-            width={'90%'}
-            variant={'solid'}
-            _text={{
-              color: 'white',
-            }}
-            backgroundColor={'#F79520'}>
-            Sign Up
-          </Button>}
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            <Button
+              mt="10"
+              borderRadius="full"
+              onPress={submit}
+              width={'90%'}
+              variant={'solid'}
+              _text={{
+                color: 'white',
+              }}
+              backgroundColor={'#F79520'}>
+              Sign Up
+            </Button>
+          )}
           <Text mt="5" color={'white'}>
             Already have an account?
           </Text>

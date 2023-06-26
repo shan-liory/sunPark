@@ -1,13 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {RefreshControl, ScrollView, PermissionsAndroid} from 'react-native';
-import {
-  Box,
-  Text,
-  VStack,
-  HStack,
-  Spinner,
-  Pressable,
-} from 'native-base';
+import {Box, Text, VStack, HStack, Spinner, Pressable} from 'native-base';
 import Geolocation from '@react-native-community/geolocation';
 import axios from 'axios';
 import {useRoute, useNavigation} from '@react-navigation/native';
@@ -46,8 +39,8 @@ const Location = () => {
 
   useEffect(() => {
     axios
-      .get("http://192.168.1.111:3500/carparkbuilding")
-      // .get('http://172.20.10.4:3500/carparkbuilding')
+      //.get("http://192.168.1.111:3500/carparkbuilding")
+      .get('http://172.20.10.4:3500/carparkbuilding')
       .then(response => {
         setBuildings(response.data);
       })
@@ -55,7 +48,6 @@ const Location = () => {
         console.error('Error fetching data:', error);
       });
   }, []);
-
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -133,13 +125,9 @@ const Location = () => {
                   <Text fontWeight="bold" flexShrink={1}>
                     To {building.name}
                   </Text>
-                  <Text>
-                    {etaDistances[index]?.distanceText} 
-                  </Text>
+                  <Text>{etaDistances[index]?.distanceText}</Text>
                 </HStack>
-                <Text>
-                  {etaDistances[index]?.eta} 
-                </Text>
+                <Text>{etaDistances[index]?.eta}</Text>
               </VStack>
             </Box>
           </Pressable>

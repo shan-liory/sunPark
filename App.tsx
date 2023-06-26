@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   NavigationContainer,
   getFocusedRouteNameFromRoute,
@@ -11,6 +11,7 @@ import Profile from './screen/Profile';
 import ScanQR from './screen/ScanQR';
 import EditProfile from './screen/EditProfile';
 import ParkingSession from './screen/ParkingSession';
+import ConfirmReservation from './screen/ConfirmReservation';
 import Maps from './screen/Map';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {
@@ -36,6 +37,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+const ReservationStack = createStackNavigator();
+function ReservationStackNavigator() {
+  return (
+    <ReservationStack.Navigator screenOptions={{headerShown: false}}>
+      <ReservationStack.Screen name="ReservedOptions" component={Reservation} />
+      <ReservationStack.Screen
+        name="ConfirmReserve"
+        component={ConfirmReservation}
+      />
+    </ReservationStack.Navigator>
+  );
+}
 
 const LocationStack = createStackNavigator();
 
@@ -105,10 +119,11 @@ function MainNavigator() {
           return <FontAwesomeIcon icon={icon} color={color} size={size} />;
         },
         headerShown: false,
+        tabBarHideOnKeyboard: true,
         tabBarActiveBackgroundColor: 'black',
       })}>
       <Tab.Screen name="Home" component={Home} />
-      <Tab.Screen name="Reserve" component={Reservation} />
+      <Tab.Screen name="Reserve" component={ReservationStackNavigator} />
       <Tab.Screen name="Scan QR" component={QRStackNavigator} />
       <Tab.Screen name="Location" component={LocationStackNavigator} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} />
@@ -132,26 +147,38 @@ const theme = extendTheme({
 });
 
 const App: React.FC = () => {
-  const userLoggedIn = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    checkLoginStatus();
+    console.log('isLoggedIn', isLoggedIn);
+  }, [isLoggedIn]);
+
+  const checkLoginStatus = async () => {
     try {
-      const auth = AsyncStorage.getItem('email');
-      console.log(auth);
-      return true;
+      const auth = await AsyncStorage.getItem('email');
+      console.log('asyncStorageItem', auth);
+      if (auth != null) {
+        setIsLoggedIn(true);
+        //console.log('Status', isLoggedIn);
+      } else {
+        setIsLoggedIn(false);
+      }
     } catch (e) {
-      return true;
+      setIsLoggedIn(false);
     }
   };
-  console.log(userLoggedIn());
   return (
     <NativeBaseProvider theme={theme}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{headerShown: false}}>
-          {userLoggedIn() ? (
-            <>
+          {isLoggedIn ? (
+            <React.Fragment>
               <Stack.Screen name="Main" component={MainNavigator} />
-              <Stack.Screen name="auth" component={AuthStackNavigator} />
-            </>
+              <Stack.Screen name="Main_Auth" component={AuthStackNavigator} />
+            </React.Fragment>
           ) : (
+            // <Stack.Screen name="auth" component={AuthStackNavigator} />
             <Stack.Screen name="auth" component={AuthStackNavigator} />
           )}
         </Stack.Navigator>

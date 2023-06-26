@@ -19,6 +19,7 @@ import {useNavigation} from '@react-navigation/native';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faEye, faEyeSlash} from '@fortawesome/free-solid-svg-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {DevSettings} from 'react-native';
 
 const Login = () => {
   const navigation = useNavigation<any>();
@@ -29,11 +30,6 @@ const Login = () => {
     email: '',
     password: '',
   });
-  // const onPress = () => {
-  //   console.log("is Clicked")
-  //   navigation.navigate('Main', {
-  //   });
-  //  }
 
   const toSignUpScreen = () => {
     console.log('is Clicked');
@@ -44,22 +40,35 @@ const Login = () => {
     setIsLoading(true);
     console.log('hello', 'isClicked');
     try {
+      console.log('form', form);
       await axios
-        //.post("http://172.20.10.4:3500/login/user",{form})
-        .post('http://192.168.1.111:3500/login/user', {form})
+        .post('http://172.20.10.4:3500/login/user', {form})
+        //.post('http://192.168.1.111:3500/login/user', {form})
         .then(res => {
           if (form.email == '' || form.password == '') {
+            setIsLoading(false);
             toast.show({
               description: 'Please fill in the required field.',
             });
           } else if (res.data.message == 'LoginPass') {
             console.log('res', res.data);
-            const itemKey = ['name', 'email', 'phone', 'carPlate'];
+            const itemKey = [
+              'name',
+              'email',
+              'phone',
+              'carPlate',
+              'parkingLot',
+              'reservedParkingLot',
+              'pendingReservedParkingLot',
+            ];
             const itemValue = [
               res.data.name,
               res.data.email,
               res.data.phone,
               res.data.carPlate,
+              res.data.parkingLot,
+              res.data.reservedParkingLotId,
+              '',
             ];
             (async () => {
               for (let i = 0; i < itemKey.length; i++) {
@@ -67,25 +76,23 @@ const Login = () => {
                 console.log(`Item ${itemKey[i]} set successfully.`);
               }
             })();
-
-            // await AsyncStorage.setItem('level', JSON.stringify(res.data.level));
-            // await AsyncStorage.setItem('carPlate', res.data.carPlate);
-            // await AsyncStorage.setItem('email', res.data.email);
-            // await AsyncStorage.setItem('phone', res.data.phone);
-            navigation.replace('Main', {});
+            navigation.replace('Main', {screen: 'Home'});
             setIsLoading(false);
           } else if (res.data == 'No user') {
+            setIsLoading(false);
             toast.show({
               description: 'Email is not registered.',
             });
           } else if (res.data == 'loginFail') {
+            setIsLoading(false);
             toast.show({
               description: 'Wrong credentials',
             });
           } else if (res.data == 'fail') {
             setIsLoading(false);
+            DevSettings.reload();
             toast.show({
-              description: 'Failed',
+              description: 'Failed, Please check your email/password.',
             });
           }
         })
@@ -96,7 +103,6 @@ const Login = () => {
       console.log(e);
     }
   };
-  const fetchDataAndSaveToStorage = async () => {};
   // const keys = AsyncStorage.getAllKeys()
 
   // console.log("storage", keys)
@@ -106,7 +112,7 @@ const Login = () => {
       <Box alignItems={'center'} p={10}>
         <Image alt="logo" source={require('../asset/logo.png')} size={300} />
         <FormControl isRequired>
-          <FormControl.Label mb={2}>Email ID</FormControl.Label>
+          <FormControl.Label mb={2}>Email Address</FormControl.Label>
           <Input
             style={{color: '#ffffff'}}
             placeholder="example@email.com"

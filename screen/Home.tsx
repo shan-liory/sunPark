@@ -15,12 +15,6 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Home = () => {
-  // type Profile = [{
-  //   name: String,
-  //   carPlate:String,
-  //   email:String,
-  //   phone:String
-  // }]
   const [parkingLots, setParkingLots] = useState(0);
   const [availableReservedParking, setAvailableReservedParking] = useState(0);
   const [profileData, setProfileData] = useState({
@@ -28,29 +22,43 @@ const Home = () => {
     carPlate: 'XX',
     email: 'example@imail.edu.my',
     phone: '01-- --- ----',
+    parkingLot: '',
+    reservedParkingLot: '',
+    pendingReservedParkingLot: '',
   });
 
   const getData = async () => {
-    console.log('data', 'data');
     try {
       const keyValuePair = await AsyncStorage.multiGet([
         'name',
         'carPlate',
         'email',
         'phone',
+        'parkingLot',
+        'reservedParkingLot',
+        'pendingReservedParkingLot',
       ]);
       if (keyValuePair !== null) {
         const values = keyValuePair.map(([key, value]) => value);
         const profileValues = values.map(value => value || '');
-        const [name, carPlate, email, phone] = profileValues;
+        const [
+          name,
+          carPlate,
+          email,
+          phone,
+          parkingLot,
+          reservedParkingLot,
+          pendingReservedParkingLot,
+        ] = profileValues;
         const profileData = {
           name: name || '',
           carPlate: carPlate || '',
           email: email || '',
           phone: phone || '',
+          parkingLot: parkingLot || '',
+          reservedParkingLot: reservedParkingLot || '',
+          pendingReservedParkingLot: pendingReservedParkingLot || '',
         };
-        const auth = AsyncStorage.getItem('email');
-        console.log('auth', auth);
         setProfileData(profileData);
 
         console.log('profileData(Home)', profileData);
@@ -65,8 +73,8 @@ const Home = () => {
 
   const getAvailableParkingLots = () => {
     axios
-      .get('http://192.168.1.111:3500/availableParkingLots')
-      //.get('http://172.20.10.4:3500/availableParkingLots')
+      //.get('http://192.168.1.111:3500/availableParkingLots')
+      .get('http://172.20.10.4:3500/availableParkingLots')
       .then(response => {
         // console.log(response.data.length)
         setParkingLots(response.data.length);
@@ -77,12 +85,11 @@ const Home = () => {
   };
 
   const getAvailableReservedParkingLots = () => {
-    console.log('a', 'here');
     axios
-      .get('http://192.168.1.111:3500/availableRerservedParkingLots')
-      //.get('http://172.20.10.4:3500/availableRerservedParkingLots')
+      //.get('http://192.168.1.111:3500/availableReservedParkingLots')
+      .get('http://172.20.10.4:3500/availableReservedParkingLots')
       .then(response => {
-        // console.log(response.data.length)
+        // console.log(response.data.length);
         setAvailableReservedParking(response.data.length);
       })
       .catch(error => {
@@ -96,11 +103,21 @@ const Home = () => {
     getAvailableReservedParkingLots();
   }
 
-  const timer = setTimeout(someFunctions, 2000);
+  useEffect(() => {
+    // Run the background data fetching process at a specific interval
+    const interval = setInterval(someFunctions, 5000); // Fetch data every 5 seconds
 
-  if (availableReservedParking !== 0) {
-    clearTimeout(timer);
-  }
+    // Clean up the interval when the component unmounts
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
+
+  // const timer = setTimeout(someFunctions, 2000);
+
+  // if (availableReservedParking != 0) {
+  //   clearTimeout(timer);
+  // }
 
   return (
     <VStack bg="#003572" flex={1}>
