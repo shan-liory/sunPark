@@ -16,6 +16,7 @@ import {
 import {useRoute, useNavigation} from '@react-navigation/native';
 import {Calendar, LocaleConfig, WeekCalendar} from 'react-native-calendars';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   faCab,
   faCircleInfo,
@@ -46,6 +47,7 @@ const Reservation = () => {
   ]);
 
   const [open, setOpen] = useState(false);
+  const [hasReservation, setHasReservation] = useState(false);
 
   useEffect(() => {
     axios
@@ -70,6 +72,26 @@ const Reservation = () => {
     console.log(object);
   };
 
+  useEffect(() => {
+    const getPendingReservedParkingLot = async () => {
+      try {
+        const value = await AsyncStorage.getItem('pendingReservedParkingLot');
+        // Output the keys to the console
+        console.log(value);
+        if (value == null) {
+          setHasReservation(false);
+        } else {
+          setHasReservation(true);
+        }
+        console.log(hasReservation);
+      } catch (error) {
+        console.error('Error retrieving AsyncStorage value:', error);
+      }
+    };
+
+    getPendingReservedParkingLot();
+  }, [hasReservation]);
+
   return (
     <Box bg="#003572" flex={1} alignContent="center">
       <HStack justifyContent={'space-between'} mt={5} mr={5} ml={5}>
@@ -86,86 +108,103 @@ const Reservation = () => {
         </Pressable>
       </HStack>
       <ScrollView>
-        <VStack
-          space="4"
-          width="90%"
-          alignSelf={'center'}
-          mt={4}
-          mb={10}
-          justifyContent={'space-between'}>
-          <Calendar
-            disableMonthChange={true}
-            hideExtraDays={true}
-            minDate={minDate}
-            maxDate={minDate}
-            hideArrows={true}
-            onDayPress={day => {
-              console.log('selected day', day);
-            }}
-            style={{
-              borderWidth: 1,
-              borderColor: 'gray',
-            }}
-            theme={{
-              todayDotColor: '#000000',
-              backgroundColor: '#00adf5',
-              calendarBackground: '#ffffff',
-              textSectionTitleColor: '#b6c1cd',
-              selectedDayBackgroundColor: '#00adf5',
-              selectedDayTextColor: '#ffffff',
-              todayTextColor: '#00adf5',
-              dayTextColor: '#2d4150',
-              textDisabledColor: '#d9e1e8',
-              dotColor: '#00adf5',
-              selectedDotColor: '#000000',
-              arrowColor: 'orange',
-              monthTextColor: 'blue',
-              indicatorColor: 'blue',
-              textDayFontFamily: 'monospace',
-              textMonthFontFamily: 'monospace',
-              textDayHeaderFontFamily: 'monospace',
-              textDayFontWeight: 'bold',
-              textMonthFontWeight: 'bold',
-              textDayHeaderFontWeight: 'bold',
-              textDayFontSize: 16,
-              textMonthFontSize: 16,
-              textDayHeaderFontSize: 16,
-            }}
-
-            // Customize other calendar props as needed
-          />
-          {reserveParking.map((reserveParking: any, index: any) => (
-            <Pressable
-              key={reserveParking._id}
-              onPress={() => toReservationDetails(reserveParking)}>
-              <Box
-                p="4"
-                borderWidth={1}
-                borderRadius={10}
-                bg="#F3F3F3"
-                borderColor="#F79520">
-                <HStack>
-                  <Image
-                    alt="logo"
-                    source={require('../asset/car.png')}></Image>
-                  <VStack>
-                    <Text> {reserveParking.name} </Text>
-                    {reserveParking.isReserved ? (
-                      <Text fontSize="30" fontWeight="bold" color={'red.700'}>
-                        RESERVED
-                      </Text>
-                    ) : (
-                      <Text fontSize="30" fontWeight="bold" color={'green.700'}>
-                        OPEN
-                      </Text>
-                    )}
-                  </VStack>
-                </HStack>
-              </Box>
-            </Pressable>
-          ))}
-        </VStack>
+        {!hasReservation ? (
+          <VStack
+            space="4"
+            width="90%"
+            alignSelf={'center'}
+            mt={4}
+            mb={10}
+            justifyContent={'space-between'}>
+            <Calendar
+              disableMonthChange={true}
+              hideExtraDays={true}
+              minDate={minDate}
+              maxDate={minDate}
+              hideArrows={true}
+              onDayPress={day => {
+                console.log('selected day', day);
+              }}
+              style={{
+                borderWidth: 1,
+                borderColor: 'gray',
+              }}
+              theme={{
+                todayDotColor: '#000000',
+                backgroundColor: '#00adf5',
+                calendarBackground: '#ffffff',
+                textSectionTitleColor: '#b6c1cd',
+                selectedDayBackgroundColor: '#00adf5',
+                selectedDayTextColor: '#ffffff',
+                todayTextColor: '#00adf5',
+                dayTextColor: '#2d4150',
+                textDisabledColor: '#d9e1e8',
+                dotColor: '#00adf5',
+                selectedDotColor: '#000000',
+                arrowColor: 'orange',
+                monthTextColor: 'blue',
+                indicatorColor: 'blue',
+                textDayFontFamily: 'monospace',
+                textMonthFontFamily: 'monospace',
+                textDayHeaderFontFamily: 'monospace',
+                textDayFontWeight: 'bold',
+                textMonthFontWeight: 'bold',
+                textDayHeaderFontWeight: 'bold',
+                textDayFontSize: 16,
+                textMonthFontSize: 16,
+                textDayHeaderFontSize: 16,
+              }}
+            />
+            {reserveParking.map((reserveParking: any, index: any) => (
+              <Pressable
+                key={reserveParking._id}
+                onPress={() => toReservationDetails(reserveParking)}>
+                <Box
+                  p="4"
+                  borderWidth={1}
+                  borderRadius={10}
+                  bg="#F3F3F3"
+                  borderColor="#F79520">
+                  <HStack>
+                    <Image
+                      alt="logo"
+                      source={require('../asset/car.png')}></Image>
+                    <VStack>
+                      <Text> {reserveParking.name} </Text>
+                      {reserveParking.isReserved ? (
+                        <Text fontSize="30" fontWeight="bold" color={'red.700'}>
+                          RESERVED
+                        </Text>
+                      ) : (
+                        <Text
+                          fontSize="30"
+                          fontWeight="bold"
+                          color={'green.700'}>
+                          OPEN
+                        </Text>
+                      )}
+                    </VStack>
+                  </HStack>
+                </Box>
+              </Pressable>
+            ))}
+          </VStack>
+        ) : (
+          <VStack
+            space="4"
+            width="90%"
+            alignItems={'center'}
+            mt={4}
+            mb={10}
+            justifyContent={'space-between'}>
+            <Text fontWeight="bold" color="white">
+              You have a pending reservation! Kindly wait for the administrator
+              to review your reservation request.
+            </Text>
+          </VStack>
+        )}
       </ScrollView>
+
       <Modal
         isOpen={open}
         onClose={() => setOpen(false)}

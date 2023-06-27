@@ -16,8 +16,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Home = () => {
   const [parkingLots, setParkingLots] = useState(0);
-  const [availableReservedParking, setAvailableReservedParking] = useState(0);
+  const [availableReserveParking, setAvailableReserveParking] = useState(0);
   const [profileData, setProfileData] = useState({
+    id: '',
     name: 'XX',
     carPlate: 'XX',
     email: 'example@imail.edu.my',
@@ -30,6 +31,7 @@ const Home = () => {
   const getData = async () => {
     try {
       const keyValuePair = await AsyncStorage.multiGet([
+        'id',
         'name',
         'carPlate',
         'email',
@@ -42,6 +44,7 @@ const Home = () => {
         const values = keyValuePair.map(([key, value]) => value);
         const profileValues = values.map(value => value || '');
         const [
+          id,
           name,
           carPlate,
           email,
@@ -51,6 +54,7 @@ const Home = () => {
           pendingReservedParkingLot,
         ] = profileValues;
         const profileData = {
+          id: id || '',
           name: name || '',
           carPlate: carPlate || '',
           email: email || '',
@@ -61,8 +65,7 @@ const Home = () => {
         };
         setProfileData(profileData);
 
-        console.log('profileData(Home)', profileData);
-        // value previously stored
+        // console.log('profileData(Home)', profileData);
       } else {
         console.log('is null');
       }
@@ -84,13 +87,13 @@ const Home = () => {
       });
   };
 
-  const getAvailableReservedParkingLots = () => {
+  const getAvailableReserveParkingLots = () => {
     axios
-      //.get('http://192.168.1.111:3500/availableReservedParkingLots')
-      .get('http://172.20.10.4:3500/availableReservedParkingLots')
+      //.get('http://192.168.1.111:3500/availableReserveParkingLots')
+      .get('http://172.20.10.4:3500/availableReserveParkingLots')
       .then(response => {
         // console.log(response.data.length);
-        setAvailableReservedParking(response.data.length);
+        setAvailableReserveParking(response.data.length);
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -100,7 +103,7 @@ const Home = () => {
   function someFunctions() {
     getAvailableParkingLots();
     getData();
-    getAvailableReservedParkingLots();
+    getAvailableReserveParkingLots();
   }
 
   useEffect(() => {
@@ -150,9 +153,15 @@ const Home = () => {
               borderColor="#F79520">
               <VStack>
                 <Text>Your Parking Slot: </Text>
-                <Text fontSize="30" fontWeight="bold">
-                  --{' '}
-                </Text>
+                {profileData.parkingLot ? (
+                  <Text fontSize="30" fontWeight="bold">
+                    {profileData.parkingLot}
+                  </Text>
+                ) : (
+                  <Text fontSize="30" fontWeight="bold">
+                    --
+                  </Text>
+                )}
               </VStack>
             </Box>
             <Box
@@ -177,7 +186,7 @@ const Home = () => {
                 <Text p="4">Available slot for reservation: </Text>
                 <HStack>
                   <Text fontSize="100" fontWeight="bold" pl="4">
-                    {availableReservedParking}{' '}
+                    {availableReserveParking}{' '}
                   </Text>
                   <Text fontSize="70" fontWeight="bold" color="grey">
                     of 3

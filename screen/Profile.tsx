@@ -21,6 +21,7 @@ import axios from 'axios';
 
 const Profile = () => {
   const [profileData, setProfileData] = useState({
+    id: '',
     name: '',
     carPlate: '',
     email: '',
@@ -53,6 +54,7 @@ const Profile = () => {
   const onLogOut = async () => {
     //setItem to empty
     const keys = [
+      'id',
       'name',
       'carPlate',
       'email',
@@ -116,6 +118,7 @@ const Profile = () => {
   const getData = async () => {
     try {
       const keyValuePair = await AsyncStorage.multiGet([
+        'id',
         'name',
         'carPlate',
         'email',
@@ -127,6 +130,7 @@ const Profile = () => {
         const values = keyValuePair.map(([key, value]) => value);
         const profileValues = values.map(value => value || '');
         const [
+          id,
           name,
           carPlate,
           email,
@@ -136,6 +140,7 @@ const Profile = () => {
           pendingReservedParkingLot,
         ] = profileValues;
         const profileData = {
+          id: id || '',
           name: name || '',
           carPlate: carPlate || '',
           email: email || '',

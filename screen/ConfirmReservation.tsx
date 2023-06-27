@@ -29,7 +29,9 @@ import moment from 'moment';
 const ConfirmReservation = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [profileData, setProfileData] = useState({
+    id: '',
     name: '',
     carPlate: '',
     email: '',
@@ -42,6 +44,7 @@ const ConfirmReservation = () => {
   const getData = async () => {
     try {
       const keyValuePair = await AsyncStorage.multiGet([
+        'id',
         'name',
         'carPlate',
         'email',
@@ -54,6 +57,7 @@ const ConfirmReservation = () => {
         const values = keyValuePair.map(([key, value]) => value);
         const profileValues = values.map(value => value || '');
         const [
+          id,
           name,
           carPlate,
           email,
@@ -63,6 +67,7 @@ const ConfirmReservation = () => {
           pendingReservedParkingLot,
         ] = profileValues;
         const profileData = {
+          id: id || '',
           name: name || '',
           carPlate: carPlate || '',
           email: email || '',
@@ -73,6 +78,7 @@ const ConfirmReservation = () => {
         };
         setProfileData(profileData);
         setAllReservationDetails({
+          id: profileData.id,
           studentName: profileData.name,
           studentCarPlate: profileData.carPlate,
           reservedAt: today,
@@ -98,6 +104,7 @@ const ConfirmReservation = () => {
   }
 
   const [allReservationDetails, setAllReservationDetails] = useState({
+    id: '',
     studentName: '',
     studentCarPlate: '',
     reservedAt: '',
@@ -107,16 +114,19 @@ const ConfirmReservation = () => {
 
   const handleReservation = async () => {
     console.log('pressed');
+    setIsButtonDisabled(true);
     await axios
       .post('http://172.20.10.4:3500/reservation', {allReservationDetails})
       .then(response => {
         if (response.data == 'updated') {
-          async () => {
+          //   console.log('CR', allReservationDetails.chosenLot);
+          (async () => {
             await AsyncStorage.setItem(
               'pendingReservedParkingLot',
               allReservationDetails.chosenLot,
             );
-          };
+          })();
+          navigation.replace('ReservedOptions');
           console.log('updated');
         }
       })
@@ -124,6 +134,19 @@ const ConfirmReservation = () => {
         console.error('Error fetching data:', error);
       });
   };
+
+  //   useEffect(() => {
+  //     const getAsyncStorageKeys = async () => {
+  //       try {
+  //         const keys = await AsyncStorage.getAllKeys();
+  //         console.log(keys); // Output the keys to the console
+  //       } catch (error) {
+  //         console.error('Error retrieving AsyncStorage keys:', error);
+  //       }
+  //     };
+
+  //     getAsyncStorageKeys();
+  //   }, []);
 
   return (
     <VStack bg="#003572" flex={1} alignContent="center">
@@ -167,7 +190,10 @@ const ConfirmReservation = () => {
         </HStack>
       </VStack>
       <Box flex={1} />
-      <Button width="100%" onPress={handleReservation}>
+      <Button
+        width="100%"
+        onPress={handleReservation}
+        isDisabled={isButtonDisabled}>
         Confirm Reservation
       </Button>
     </VStack>

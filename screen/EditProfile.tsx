@@ -32,10 +32,6 @@ const EditProfile = () => {
     carPlate: route.params.profileData.carPlate,
   });
 
-  const testEdit = async () => {
-    await AsyncStorage.setItem('phone', '0121234567');
-    navigation.replace('Main', {screen: 'Profile'});
-  };
   const handleEditInfo = async (e: any) => {
     console.log('clicked');
     try {

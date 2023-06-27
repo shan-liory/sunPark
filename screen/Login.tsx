@@ -53,6 +53,7 @@ const Login = () => {
           } else if (res.data.message == 'LoginPass') {
             console.log('res', res.data);
             const itemKey = [
+              'id',
               'name',
               'email',
               'phone',
@@ -62,6 +63,7 @@ const Login = () => {
               'pendingReservedParkingLot',
             ];
             const itemValue = [
+              res.data.id,
               res.data.name,
               res.data.email,
               res.data.phone,

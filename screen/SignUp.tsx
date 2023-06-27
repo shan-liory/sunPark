@@ -82,6 +82,7 @@ const SignUp = () => {
               });
             } else if ((res.data.message = 'Not Exist')) {
               //setItem
+              AsyncStorage.setItem('id', res.data.id);
               AsyncStorage.setItem('name', res.data.name);
               AsyncStorage.setItem('level', JSON.stringify(res.data.level));
               AsyncStorage.setItem('carPlate', res.data.carPlate);
