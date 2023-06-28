@@ -13,6 +13,7 @@ import EditProfile from './screen/EditProfile';
 import ParkingSession from './screen/ParkingSession';
 import ConfirmReservation from './screen/ConfirmReservation';
 import Maps from './screen/Map';
+import SplashScreen from './screen/SplashScreen';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {
   NativeBaseProvider,
@@ -147,6 +148,15 @@ const theme = extendTheme({
 });
 
 const App: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading process
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000); // Replace this with your actual loading logic
+  }, []);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -170,19 +180,23 @@ const App: React.FC = () => {
   };
   return (
     <NativeBaseProvider theme={theme}>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{headerShown: false}}>
-          {isLoggedIn ? (
-            <React.Fragment>
-              <Stack.Screen name="Main" component={MainNavigator} />
-              <Stack.Screen name="Main_Auth" component={AuthStackNavigator} />
-            </React.Fragment>
-          ) : (
-            // <Stack.Screen name="auth" component={AuthStackNavigator} />
-            <Stack.Screen name="auth" component={AuthStackNavigator} />
-          )}
-        </Stack.Navigator>
-      </NavigationContainer>
+      {isLoading ? (
+        <SplashScreen />
+      ) : (
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{headerShown: false}}>
+            {isLoggedIn ? (
+              <React.Fragment>
+                <Stack.Screen name="Main" component={MainNavigator} />
+                <Stack.Screen name="Main_Auth" component={AuthStackNavigator} />
+              </React.Fragment>
+            ) : (
+              // <Stack.Screen name="auth" component={AuthStackNavigator} />
+              <Stack.Screen name="auth" component={AuthStackNavigator} />
+            )}
+          </Stack.Navigator>
+        </NavigationContainer>
+      )}
     </NativeBaseProvider>
   );
 };

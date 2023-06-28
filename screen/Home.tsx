@@ -153,12 +153,15 @@ const Home = () => {
               borderColor="#F79520">
               <VStack>
                 <Text>Your Parking Slot: </Text>
-                {profileData.parkingLot ? (
-                  <Text fontSize="30" fontWeight="bold">
-                    {profileData.parkingLot}
+                {profileData.parkingLot !== '' ||
+                profileData.reservedParkingLot !== '' ? (
+                  <Text fontSize={30} fontWeight="bold">
+                    {profileData.parkingLot ||
+                      profileData.reservedParkingLot ||
+                      '--'}
                   </Text>
                 ) : (
-                  <Text fontSize="30" fontWeight="bold">
+                  <Text fontSize={30} fontWeight="bold">
                     --
                   </Text>
                 )}

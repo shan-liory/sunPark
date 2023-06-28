@@ -27,7 +27,7 @@ const ParkingSession = () => {
       });
   }, []);
 
-  console.log(lots);
+  // console.log(lots);
 
   const onPressEndSession = () => {
     axios

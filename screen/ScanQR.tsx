@@ -1,5 +1,14 @@
 import React, {useState, useEffect} from 'react';
-import {Box, Text, Pressable, Center, Modal, Button, HStack} from 'native-base';
+import {
+  Box,
+  Text,
+  Pressable,
+  Center,
+  Modal,
+  Button,
+  HStack,
+  VStack,
+} from 'native-base';
 import axios from 'axios';
 import {RNCamera} from 'react-native-camera';
 import QRCodeScanner from 'react-native-qrcode-scanner';
@@ -13,6 +22,8 @@ const ScanQR = () => {
   const [isValid, setIsValid] = useState<boolean>(true);
   const [open, setOpen] = useState<boolean>(false);
   const [isModal2Open, setIsModal2Open] = useState(false);
+  const [allowScan, setAllowScan] = useState(true);
+  const [allowScanAndMessage, setAllowScanAndMessage] = useState(true);
 
   const navigation = useNavigation<any>();
 
@@ -52,24 +63,76 @@ const ScanQR = () => {
       });
   };
 
+  const hasPending = async () => {
+    const check = await AsyncStorage.getItem('pendingReservedParkingLot');
+    const checkReserve = await AsyncStorage.getItem('reservedParkingLot');
+    if (check != null) {
+      setAllowScan(false);
+    } else if (checkReserve != null) {
+      setAllowScanAndMessage(false);
+    }
+  };
+
+  hasPending();
+
   return (
     <Box bg="#003572" flex={1} alignContent="center">
       <Text fontSize="20" ml={5} fontWeight="bold" mt={5} color="white">
         Scan QR Code
       </Text>
-      <Button onPress={onPress}> here </Button>
-      <Box alignItems="center">
-        <Text color="white" mt={3} fontSize="12">
-          Scan parking QR code here.
-        </Text>
-        <QRCodeScanner
-          onRead={onSuccess}
-          reactivateTimeout={3000}
-          reactivate={true}
-          flashMode={RNCamera.Constants.FlashMode.off}
-          cameraStyle={{width: '90%', marginLeft: 20, marginTop: 50}}
-        />
-      </Box>
+      {/* <Button onPress={onPress}> here </Button> */}
+      {allowScan && allowScanAndMessage ? (
+        allowScanAndMessage ? (
+          <Box alignItems="center">
+            <Text color="white" mt={3} fontSize="12">
+              Scan parking QR code here.
+            </Text>
+            <QRCodeScanner
+              onRead={onSuccess}
+              reactivateTimeout={3000}
+              reactivate={true}
+              flashMode={RNCamera.Constants.FlashMode.off}
+              cameraStyle={{width: '90%', marginLeft: 20, marginTop: 50}}
+            />
+          </Box>
+        ) : (
+          <Box alignSelf="center" width="90%">
+            <VStack space={4}>
+              <Text color="white" mt={3} fontSize="12" fontWeight="bold">
+                You have a pending reservation request.
+              </Text>
+              <Text
+                color="white"
+                mb={3}
+                fontSize="12"
+                fontWeight="bold"
+                textAlign={'justify'}>
+                In order to initiate the QR parking session, please cancel your
+                previous reservation request if you would like to scan the QR
+                code.
+              </Text>
+              {/* <Button>Click here to navigate to Reservation page</Button> */}
+            </VStack>
+          </Box>
+        )
+      ) : (
+        <Box alignSelf="center" width="90%">
+          <VStack space={4}>
+            <Text color="white" mt={3} fontSize="12" fontWeight="bold">
+              You have a reserved parking lot!
+            </Text>
+            <Text
+              color="white"
+              mb={3}
+              fontSize="12"
+              fontWeight="bold"
+              textAlign={'justify'}>
+              Please proceed to your reserved parking lot.
+            </Text>
+            {/* <Button>Click here to navigate to Reservation page</Button> */}
+          </VStack>
+        </Box>
+      )}
       <Modal isOpen={open} onClose={() => setOpen(false)} safeAreaTop={true}>
         <Modal.Content maxWidth="350">
           <Modal.CloseButton />

@@ -35,7 +35,7 @@ const Reservation = () => {
       isParked: boolean;
     },
   ];
-
+  const [reservedLot, setReservedLot] = useState('');
   const [reserveParking, setReserveParking] = useState<ReserveParking>([
     {
       _id: '',
@@ -48,6 +48,8 @@ const Reservation = () => {
 
   const [open, setOpen] = useState(false);
   const [hasReservation, setHasReservation] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
 
   useEffect(() => {
     axios
@@ -73,24 +75,102 @@ const Reservation = () => {
   };
 
   useEffect(() => {
+    const getReservationStatus = async () => {
+      console.log('status');
+      const value = await AsyncStorage.getItem('id');
+      try {
+        axios
+          .get('http://172.20.10.4:3500/retrieveUserReservationStatus', {
+            params: {
+              value: value,
+            },
+          })
+          .then(response => {
+            if (response.data.message == 'approved') {
+              console.log('approved');
+              (async () => {
+                await AsyncStorage.setItem('pendingReservedParkingLot', '');
+                await AsyncStorage.setItem(
+                  'reservedParkingLot',
+                  response.data.data,
+                );
+              })();
+            } else if (response.data.message == 'rejected') {
+              console.log('rejected');
+              (async () => {
+                await AsyncStorage.setItem('pendingReservedParkingLot', '');
+              })();
+            }
+            // console.log(response.data.message);
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getReservationStatus();
+  }, [hasReservation, isApproved]);
+
+  const onCancel = async () => {
+    console.log('clicked cancel');
+    try {
+      const value = await AsyncStorage.getItem('pendingReservedParkingLot');
+      axios
+        .post('http://172.20.10.4:3500/cancelReservation', {value})
+        .then(response => {
+          if (response.data.message == 'cancelled') {
+            (async () => {
+              await AsyncStorage.removeItem('pendingReservedParkingLot');
+            })();
+            setHasReservation(false);
+            setIsButtonDisabled(true);
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
     const getPendingReservedParkingLot = async () => {
       try {
-        const value = await AsyncStorage.getItem('pendingReservedParkingLot');
+        const pending = await AsyncStorage.getItem('pendingReservedParkingLot');
+        const approve = await AsyncStorage.getItem('ReservedParkingLot');
         // Output the keys to the console
-        console.log(value);
-        if (value == null) {
+        console.log('approve', approve);
+        if (pending == null && approve == null) {
           setHasReservation(false);
-        } else {
+          setIsApproved(false);
+          // console.log('hasreservation', hasReservation);
+          // console.log('isapprove', isApproved);
+        } else if (pending == null && approve != null) {
           setHasReservation(true);
+          setIsApproved(true);
+          setReservedLot(approve);
         }
-        console.log(hasReservation);
       } catch (error) {
         console.error('Error retrieving AsyncStorage value:', error);
       }
     };
-
+    console.log(reservedLot);
     getPendingReservedParkingLot();
-  }, [hasReservation]);
+  }, [hasReservation, isApproved]);
+
+  // useEffect(() => {
+  //   // Run the background data fetching process at a specific interval
+  //   const interval = setInterval(getReservationStatus, 2000); // Fetch data every 5 seconds
+
+  //   // Clean up the interval when the component unmounts
+  //   return () => {
+  //     clearInterval(interval);
+  //   };
+  // }, []);
 
   return (
     <Box bg="#003572" flex={1} alignContent="center">
@@ -108,7 +188,33 @@ const Reservation = () => {
         </Pressable>
       </HStack>
       <ScrollView>
-        {!hasReservation ? (
+        {hasReservation && isApproved ? (
+          !isApproved ? (
+            <VStack space="4" width="90%" alignItems={'center'} mt={4} mb={10}>
+              <Text
+                fontWeight="bold"
+                color="white"
+                justifyContent={'space-between'}>
+                You have a pending reservation! Kindly wait for the
+                administrator to review your reservation request.
+              </Text>
+              <Box flex={1}></Box>
+              <Button onPress={onCancel} isDisabled={isButtonDisabled}>
+                Cancel Reservation
+              </Button>
+            </VStack>
+          ) : (
+            <VStack space="4" width="90%" alignItems={'center'} mt={4} mb={10}>
+              <Text fontWeight="bold" color="white">
+                Your reserved has been approved!
+              </Text>
+              <Text fontWeight="bold" color="white">
+                Your reserved parking lot is {reservedLot}
+              </Text>
+              <Box flex={1}></Box>
+            </VStack>
+          )
+        ) : (
           <VStack
             space="4"
             width="90%"
@@ -188,19 +294,6 @@ const Reservation = () => {
                 </Box>
               </Pressable>
             ))}
-          </VStack>
-        ) : (
-          <VStack
-            space="4"
-            width="90%"
-            alignItems={'center'}
-            mt={4}
-            mb={10}
-            justifyContent={'space-between'}>
-            <Text fontWeight="bold" color="white">
-              You have a pending reservation! Kindly wait for the administrator
-              to review your reservation request.
-            </Text>
           </VStack>
         )}
       </ScrollView>
