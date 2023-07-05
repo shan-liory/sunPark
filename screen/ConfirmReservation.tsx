@@ -13,7 +13,6 @@ import {
   Spinner,
   Pressable,
 } from 'native-base';
-import {Calendar, LocaleConfig, WeekCalendar} from 'react-native-calendars';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {
   faAngleLeft,
@@ -27,6 +26,10 @@ import {useRoute, useNavigation} from '@react-navigation/native';
 import moment from 'moment';
 
 const ConfirmReservation = () => {
+  const ipAddress1 = 'http://172.20.10.4:3500';
+  const ipAddress2 = 'http://192.168.1.104:3500';
+
+  let selectedIpAddress = ipAddress2;
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
@@ -79,6 +82,7 @@ const ConfirmReservation = () => {
         setProfileData(profileData);
         setAllReservationDetails({
           id: profileData.id,
+          email: profileData.email,
           studentName: profileData.name,
           studentCarPlate: profileData.carPlate,
           reservedAt: today,
@@ -105,6 +109,7 @@ const ConfirmReservation = () => {
 
   const [allReservationDetails, setAllReservationDetails] = useState({
     id: '',
+    email: '',
     studentName: '',
     studentCarPlate: '',
     reservedAt: '',
@@ -113,10 +118,10 @@ const ConfirmReservation = () => {
   });
 
   const handleReservation = async () => {
-    console.log('pressed');
+    console.log(allReservationDetails);
     setIsButtonDisabled(true);
     await axios
-      .post('http://172.20.10.4:3500/reservation', {allReservationDetails})
+      .post(`${selectedIpAddress}/reservation`, {allReservationDetails})
       .then(response => {
         if (response.data == 'updated') {
           //   console.log('CR', allReservationDetails.chosenLot);
@@ -126,8 +131,10 @@ const ConfirmReservation = () => {
               allReservationDetails.chosenLot,
             );
           })();
-          navigation.replace('ReservedOptions');
+          navigation.replace('ReservationStatus');
           console.log('updated');
+        } else if (response.data == 'has reservation') {
+          navigation.replace('ReservationStatus');
         }
       })
       .catch(error => {
@@ -153,7 +160,7 @@ const ConfirmReservation = () => {
       <Box mt={5} borderBottomColor="#F79520" borderBottomWidth={5} pb={5}>
         <HStack space={3} alignItems="center">
           <Box alignItems="center" bg="#F3F3F3e" p={2}>
-            <Pressable onPress={() => navigation.replace('ReservedOptions')}>
+            <Pressable onPress={() => navigation.navigate('ReservedOptions')}>
               <FontAwesomeIcon icon={faAngleLeft} size={25} color="#F79520" />
               {/* <Text color="#F79520"> Back </Text> */}
             </Pressable>

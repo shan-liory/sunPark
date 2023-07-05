@@ -22,6 +22,10 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EditProfile = () => {
+  const ipAddress1 = 'http://172.20.10.4:3500';
+  const ipAddress2 = 'http://192.168.1.104:3500';
+
+  let selectedIpAddress = ipAddress2;
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const [isSuccessful, setIsSuccessful] = useState(false);
@@ -36,7 +40,7 @@ const EditProfile = () => {
     console.log('clicked');
     try {
       await axios
-        .post('http://172.20.10.4:3500/update-user-info', {
+        .post(`${selectedIpAddress}/update-user-info`, {
           editForm,
         })
         // .post('http://192.168.1.111:3500/update-user-info', {
@@ -52,6 +56,8 @@ const EditProfile = () => {
               await AsyncStorage.setItem('phone', editForm.phone);
               navigation.replace('Main', {screen: 'Profile'});
             })();
+          } else {
+            console.log('fall here');
           }
         })
         .catch(e => {

@@ -15,11 +15,15 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Home = () => {
+  const ipAddress1 = 'http://172.20.10.4:3500';
+  const ipAddress2 = 'http://192.168.1.104:3500';
+
+  let selectedIpAddress = ipAddress2;
   const [parkingLots, setParkingLots] = useState(0);
   const [availableReserveParking, setAvailableReserveParking] = useState(0);
   const [profileData, setProfileData] = useState({
     id: '',
-    name: 'XX',
+    name: '-',
     carPlate: 'XX',
     email: 'example@imail.edu.my',
     phone: '01-- --- ----',
@@ -76,8 +80,7 @@ const Home = () => {
 
   const getAvailableParkingLots = () => {
     axios
-      //.get('http://192.168.1.111:3500/availableParkingLots')
-      .get('http://172.20.10.4:3500/availableParkingLots')
+      .get(`${selectedIpAddress}/availableParkingLots`)
       .then(response => {
         // console.log(response.data.length)
         setParkingLots(response.data.length);
@@ -89,14 +92,13 @@ const Home = () => {
 
   const getAvailableReserveParkingLots = () => {
     axios
-      //.get('http://192.168.1.111:3500/availableReserveParkingLots')
-      .get('http://172.20.10.4:3500/availableReserveParkingLots')
+      .get(`${selectedIpAddress}/availableReserveParkingLots`)
       .then(response => {
-        // console.log(response.data.length);
-        setAvailableReserveParking(response.data.length);
+        // console.log('availableR', response.data);
+        setAvailableReserveParking(response.data.reservedParkingLots.length);
       })
       .catch(error => {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data (availableR):', error);
       });
   };
 
@@ -126,11 +128,11 @@ const Home = () => {
     <VStack bg="#003572" flex={1}>
       <Box mt={5}>
         <HStack space={3} justifyContent="space-between" alignItems="center">
-          <Text fontSize="20" fontWeight="bold" ml={5} color="white">
-            Hi, {profileData.name}!
+          <Text fontSize="20" fontWeight="bold" ml={5} color="white" mb={1}>
+            Welcome, {profileData.name}!
           </Text>
 
-          <Box
+          {/* <Box
             alignItems="center"
             mr={5}
             bg="#F3F3F3e"
@@ -139,7 +141,7 @@ const Home = () => {
             borderWidth={1}
             bgColor="white">
             <FontAwesomeIcon icon={faCab} size={30} color="#F79520" />
-          </Box>
+          </Box> */}
         </HStack>
       </Box>
       <ScrollView>
@@ -195,7 +197,7 @@ const Home = () => {
                     of 3
                   </Text>
                 </HStack>
-                <Box
+                {/* <Box
                   bg="#F79520"
                   borderBottomLeftRadius={10}
                   borderBottomRightRadius={10}
@@ -203,7 +205,7 @@ const Home = () => {
                   <Text mt={2} fontWeight="bold">
                     Click here to reserve {'>'}
                   </Text>{' '}
-                </Box>
+                </Box> */}
               </VStack>
             </Box>
           </VStack>

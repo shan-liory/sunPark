@@ -22,6 +22,10 @@ import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faEye, faEyeSlash} from '@fortawesome/free-solid-svg-icons';
 
 const SignUp = () => {
+  const ipAddress1 = 'http://172.20.10.4:3500';
+  const ipAddress2 = 'http://192.168.1.104:3500';
+
+  let selectedIpAddress = ipAddress2;
   const navigation = useNavigation<any>();
   const toast = useToast();
   const [show, setShow] = useState(false);
@@ -69,12 +73,9 @@ const SignUp = () => {
       } else {
         setIsLoading(true);
         await axios
-          .post('http://172.20.10.4:3500/sign-up/user', {
+          .post(`${selectedIpAddress}/sign-up/user`, {
             form,
           })
-          // .post('http://192.168.1.111:3500/sign-up/user', {
-          //   form,
-          // })
           .then(res => {
             if (res.data == 'exist') {
               toast.show({

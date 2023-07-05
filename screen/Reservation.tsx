@@ -13,6 +13,7 @@ import {
   Spinner,
   Pressable,
 } from 'native-base';
+import moment from 'moment';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import {Calendar, LocaleConfig, WeekCalendar} from 'react-native-calendars';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
@@ -25,18 +26,14 @@ import {
 import axios from 'axios';
 
 const Reservation = () => {
+  const ipAddress1 = 'http://172.20.10.4:3500';
+  const ipAddress2 = 'http://192.168.1.104:3500';
+
+  let selectedIpAddress = ipAddress2;
   const navigation = useNavigation<any>();
-  type ReserveParking = [
-    {
-      _id: string;
-      name: string;
-      type: String;
-      isReserved: boolean;
-      isParked: boolean;
-    },
-  ];
+  const route = useRoute<any>();
   const [reservedLot, setReservedLot] = useState('');
-  const [reserveParking, setReserveParking] = useState<ReserveParking>([
+  const [reserveParking, setReserveParking] = useState([
     {
       _id: '',
       name: '',
@@ -48,129 +45,188 @@ const Reservation = () => {
 
   const [open, setOpen] = useState(false);
   const [hasReservation, setHasReservation] = useState(false);
-  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const [isApproved, setIsApproved] = useState(false);
+  const [hasQRSession, setHasQRSession] = useState(false);
+  const [profileData, setProfileData] = useState({
+    id: '',
+    name: '',
+    carPlate: '',
+    email: '',
+    phone: '01-- --- ----',
+    parkingLot: '',
+    reservedParkingLot: '',
+    pendingReservedParkingLot: '',
+  });
+  const [allReservationDetails, setAllReservationDetails] = useState({
+    id: '',
+    email: '',
+    studentName: '',
+    studentCarPlate: '',
+    reservedAt: '',
+    chosenLot: '',
+    chosenLotStatus: '',
+  });
 
-  useEffect(() => {
-    axios
-      //.get("http://192.168.1.111:3500/availableReserveParkingLots")
-      .get('http://172.20.10.4:3500/availableReserveParkingLots')
-      .then(response => {
-        setReserveParking(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  }, []);
+  // useEffect(() => {
+  const getData = async () => {
+    try {
+      const today = moment(new Date()).format('YYYY-MM-DD hh:mm:ss');
+      const keyValuePair = await AsyncStorage.multiGet([
+        'id',
+        'name',
+        'carPlate',
+        'email',
+        'phone',
+        'parkingLot',
+        'reservedParkingLot',
+        'pendingReservedParkingLot',
+      ]);
+      if (keyValuePair !== null) {
+        const values = keyValuePair.map(([key, value]) => value);
+        const profileValues = values.map(value => value || '');
+        const [
+          id,
+          name,
+          carPlate,
+          email,
+          phone,
+          parkingLot,
+          reservedParkingLot,
+          pendingReservedParkingLot,
+        ] = profileValues;
+        const profileData = {
+          id: id || '',
+          name: name || '',
+          carPlate: carPlate || '',
+          email: email || '',
+          phone: phone || '',
+          parkingLot: parkingLot || '',
+          reservedParkingLot: reservedParkingLot || '',
+          pendingReservedParkingLot: pendingReservedParkingLot || '',
+        };
+        setProfileData(profileData);
+        setAllReservationDetails({
+          id: profileData.id,
+          email: profileData.email,
+          studentName: profileData.name,
+          studentCarPlate: profileData.carPlate,
+          reservedAt: today,
+          chosenLot: route.params.object.name,
+          chosenLotStatus: 'pending',
+        });
+        console.log('profileData(R)', profileData);
+        // value previously stored
+      } else {
+        console.log('is null');
+      }
+    } catch (e) {
+      // error reading value
+    }
+  };
+  //   getData();
+  // }, []);
 
-  const date = new Date();
-  const year: any = date.getFullYear();
-  const month: any = date.getMonth() + 1; // Note: month index starts from 0
-  const day: number = date.getDate();
-  const minDate: any = year + '-' + '0' + month + '-' + day;
+  const getRParking = () => {
+    try {
+      axios
+        .get(`${selectedIpAddress}/availableReserveParkingLots`)
+        .then(response => {
+          setReserveParking(response.data.rParkingLots);
+        })
+        .catch(error => {
+          console.error('Error fetching data:', error);
+        });
+    } catch (error) {
+      console.log('getRParking', 'error');
+    }
+  };
+
+  const getTodayForCalendar = () => {
+    const date = new Date();
+    const year: any = date.getFullYear();
+    const month: any = date.getMonth() + 1; // Note: month index starts from 0
+    let day: any = date.getDate();
+
+    if (day < 10) {
+      day = '0' + day;
+    }
+
+    const minDate: string = year + '-' + '0' + month + '-' + day;
+
+    return minDate;
+  };
 
   const toReservationDetails = async (object: Object) => {
-    navigation.replace('ConfirmReserve', {object});
+    navigation.navigate('ConfirmReserve', {object});
     console.log(object);
   };
 
   useEffect(() => {
-    const getReservationStatus = async () => {
-      console.log('status');
-      const value = await AsyncStorage.getItem('id');
+    const getStatus = async () => {
+      const user = await AsyncStorage.getItem('id');
+      const parkingLot = await AsyncStorage.getItem('parkingLot');
+      const pendingPL = await AsyncStorage.getItem('pendingReservedParkingLot');
+      const reservedPL = await AsyncStorage.getItem('reservedParkingLot');
+
+      console.log(parkingLot, pendingPL, reservedPL);
       try {
-        axios
-          .get('http://172.20.10.4:3500/retrieveUserReservationStatus', {
+        await axios
+          .get(`${selectedIpAddress}/retrieveUserReservationStatus`, {
             params: {
-              value: value,
+              value: user,
             },
           })
           .then(response => {
-            if (response.data.message == 'approved') {
-              console.log('approved');
+            console.log('status');
+            if (response.data.message == 'pending') {
+              console.log('pending');
               (async () => {
-                await AsyncStorage.setItem('pendingReservedParkingLot', '');
                 await AsyncStorage.setItem(
-                  'reservedParkingLot',
-                  response.data.data,
+                  'pendingReservedParkingLot',
+                  response.data.data.parkingLotName,
                 );
               })();
             } else if (response.data.message == 'rejected') {
-              console.log('rejected');
-              (async () => {
-                await AsyncStorage.setItem('pendingReservedParkingLot', '');
-              })();
+              navigation.navigate('ReservationStatus', {allReservationDetails});
             }
-            // console.log(response.data.message);
           })
           .catch(error => {
-            console.log(error);
+            console.log('pendingR', error);
           });
       } catch (error) {
         console.log(error);
       }
+
+      if (parkingLot != null) {
+        setHasQRSession(true);
+      } else if (pendingPL != null || reservedPL != null) {
+        navigation.navigate('ReservationStatus', {allReservationDetails});
+      }
+
+      console.log(parkingLot, pendingPL, reservedPL);
     };
 
-    getReservationStatus();
-  }, [hasReservation, isApproved]);
+    const unsubscribe = navigation.addListener('focus', getStatus);
 
-  const onCancel = async () => {
-    console.log('clicked cancel');
-    try {
-      const value = await AsyncStorage.getItem('pendingReservedParkingLot');
-      axios
-        .post('http://172.20.10.4:3500/cancelReservation', {value})
-        .then(response => {
-          if (response.data.message == 'cancelled') {
-            (async () => {
-              await AsyncStorage.removeItem('pendingReservedParkingLot');
-            })();
-            setHasReservation(false);
-            setIsButtonDisabled(true);
-          }
-        })
-        .catch(error => {
-          console.log(error);
-        });
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    // Cleanup the listener when the component unmounts or the screen loses focus
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // const timer = setTimeout(getData, 2000);
+
+  // if (allReservationDetails.studentName != '') {
+  //   clearTimeout(timer);
+  // }
 
   useEffect(() => {
-    const getPendingReservedParkingLot = async () => {
-      try {
-        const pending = await AsyncStorage.getItem('pendingReservedParkingLot');
-        const approve = await AsyncStorage.getItem('ReservedParkingLot');
-        // Output the keys to the console
-        console.log('approve', approve);
-        if (pending == null && approve == null) {
-          setHasReservation(false);
-          setIsApproved(false);
-          // console.log('hasreservation', hasReservation);
-          // console.log('isapprove', isApproved);
-        } else if (pending == null && approve != null) {
-          setHasReservation(true);
-          setIsApproved(true);
-          setReservedLot(approve);
-        }
-      } catch (error) {
-        console.error('Error retrieving AsyncStorage value:', error);
-      }
+    const interval = setInterval(getRParking, 5000); // Fetch data every 5 seconds
+    return () => {
+      clearInterval(interval);
     };
-    console.log(reservedLot);
-    getPendingReservedParkingLot();
-  }, [hasReservation, isApproved]);
-
-  // useEffect(() => {
-  //   // Run the background data fetching process at a specific interval
-  //   const interval = setInterval(getReservationStatus, 2000); // Fetch data every 5 seconds
-
-  //   // Clean up the interval when the component unmounts
-  //   return () => {
-  //     clearInterval(interval);
-  //   };
-  // }, []);
+  }, []);
 
   return (
     <Box bg="#003572" flex={1} alignContent="center">
@@ -188,114 +244,103 @@ const Reservation = () => {
         </Pressable>
       </HStack>
       <ScrollView>
-        {hasReservation && isApproved ? (
-          !isApproved ? (
-            <VStack space="4" width="90%" alignItems={'center'} mt={4} mb={10}>
-              <Text
-                fontWeight="bold"
-                color="white"
-                justifyContent={'space-between'}>
-                You have a pending reservation! Kindly wait for the
-                administrator to review your reservation request.
-              </Text>
-              <Box flex={1}></Box>
-              <Button onPress={onCancel} isDisabled={isButtonDisabled}>
-                Cancel Reservation
-              </Button>
-            </VStack>
-          ) : (
-            <VStack space="4" width="90%" alignItems={'center'} mt={4} mb={10}>
-              <Text fontWeight="bold" color="white">
-                Your reserved has been approved!
-              </Text>
-              <Text fontWeight="bold" color="white">
-                Your reserved parking lot is {reservedLot}
-              </Text>
-              <Box flex={1}></Box>
-            </VStack>
-          )
-        ) : (
-          <VStack
-            space="4"
-            width="90%"
-            alignSelf={'center'}
-            mt={4}
-            mb={10}
-            justifyContent={'space-between'}>
-            <Calendar
-              disableMonthChange={true}
-              hideExtraDays={true}
-              minDate={minDate}
-              maxDate={minDate}
-              hideArrows={true}
-              onDayPress={day => {
-                console.log('selected day', day);
-              }}
-              style={{
-                borderWidth: 1,
-                borderColor: 'gray',
-              }}
-              theme={{
-                todayDotColor: '#000000',
-                backgroundColor: '#00adf5',
-                calendarBackground: '#ffffff',
-                textSectionTitleColor: '#b6c1cd',
-                selectedDayBackgroundColor: '#00adf5',
-                selectedDayTextColor: '#ffffff',
-                todayTextColor: '#00adf5',
-                dayTextColor: '#2d4150',
-                textDisabledColor: '#d9e1e8',
-                dotColor: '#00adf5',
-                selectedDotColor: '#000000',
-                arrowColor: 'orange',
-                monthTextColor: 'blue',
-                indicatorColor: 'blue',
-                textDayFontFamily: 'monospace',
-                textMonthFontFamily: 'monospace',
-                textDayHeaderFontFamily: 'monospace',
-                textDayFontWeight: 'bold',
-                textMonthFontWeight: 'bold',
-                textDayHeaderFontWeight: 'bold',
-                textDayFontSize: 16,
-                textMonthFontSize: 16,
-                textDayHeaderFontSize: 16,
-              }}
-            />
-            {reserveParking.map((reserveParking: any, index: any) => (
-              <Pressable
-                key={reserveParking._id}
-                onPress={() => toReservationDetails(reserveParking)}>
-                <Box
-                  p="4"
-                  borderWidth={1}
-                  borderRadius={10}
-                  bg="#F3F3F3"
-                  borderColor="#F79520">
-                  <HStack>
-                    <Image
-                      alt="logo"
-                      source={require('../asset/car.png')}></Image>
-                    <VStack>
-                      <Text> {reserveParking.name} </Text>
-                      {reserveParking.isReserved ? (
-                        <Text fontSize="30" fontWeight="bold" color={'red.700'}>
-                          RESERVED
-                        </Text>
-                      ) : (
-                        <Text
-                          fontSize="30"
-                          fontWeight="bold"
-                          color={'green.700'}>
-                          OPEN
-                        </Text>
-                      )}
-                    </VStack>
-                  </HStack>
-                </Box>
-              </Pressable>
-            ))}
-          </VStack>
-        )}
+        <VStack
+          space="4"
+          width="90%"
+          alignSelf={'center'}
+          mt={4}
+          mb={10}
+          justifyContent={'space-between'}>
+          <Calendar
+            disableMonthChange={true}
+            hideExtraDays={true}
+            minDate={getTodayForCalendar()}
+            maxDate={getTodayForCalendar()}
+            hideArrows={true}
+            onDayPress={day => {
+              console.log('selected day', day);
+            }}
+            style={{
+              borderWidth: 1,
+              borderColor: 'gray',
+            }}
+            theme={{
+              todayDotColor: '#000000',
+              backgroundColor: '#00adf5',
+              calendarBackground: '#ffffff',
+              textSectionTitleColor: '#b6c1cd',
+              selectedDayBackgroundColor: '#00adf5',
+              selectedDayTextColor: '#ffffff',
+              todayTextColor: '#00adf5',
+              dayTextColor: '#2d4150',
+              textDisabledColor: '#d9e1e8',
+              dotColor: '#00adf5',
+              selectedDotColor: '#000000',
+              arrowColor: 'orange',
+              monthTextColor: 'blue',
+              indicatorColor: 'blue',
+              textDayFontFamily: 'monospace',
+              textMonthFontFamily: 'monospace',
+              textDayHeaderFontFamily: 'monospace',
+              textDayFontWeight: 'bold',
+              textMonthFontWeight: 'bold',
+              textDayHeaderFontWeight: 'bold',
+              textDayFontSize: 16,
+              textMonthFontSize: 16,
+              textDayHeaderFontSize: 16,
+            }}
+          />
+          {reserveParking.map((reserveParking: any, index: any) => (
+            <Pressable
+              key={reserveParking._id}
+              isDisabled={hasQRSession || reserveParking.isReserved}
+              onPress={() => toReservationDetails(reserveParking)}>
+              <Box
+                p="4"
+                borderWidth={1}
+                borderRadius={10}
+                bg="#F3F3F3"
+                borderColor="#F79520">
+                <HStack>
+                  <Image
+                    alt="logo"
+                    source={require('../asset/car.png')}
+                    opacity={
+                      hasQRSession || reserveParking.isReserved ? 0.5 : 1
+                    }></Image>
+                  <VStack>
+                    <Text
+                      opacity={
+                        hasQRSession || reserveParking.isReserved ? 0.5 : 1
+                      }>
+                      {' '}
+                      {reserveParking.name}{' '}
+                    </Text>
+                    {reserveParking.isReserved ? (
+                      <Text
+                        fontSize="30"
+                        fontWeight="bold"
+                        color={'red.700'}
+                        opacity={
+                          hasQRSession || reserveParking.isReserved ? 0.5 : 1
+                        }>
+                        RESERVED
+                      </Text>
+                    ) : (
+                      <Text
+                        fontSize="30"
+                        fontWeight="bold"
+                        color={'green.700'}
+                        opacity={hasQRSession ? 0.5 : 1}>
+                        OPEN
+                      </Text>
+                    )}
+                  </VStack>
+                </HStack>
+              </Box>
+            </Pressable>
+          ))}
+        </VStack>
       </ScrollView>
 
       <Modal

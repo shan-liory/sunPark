@@ -22,6 +22,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {DevSettings} from 'react-native';
 
 const Login = () => {
+  const ipAddress1 = 'http://172.20.10.4:3500';
+  const ipAddress2 = 'http://192.168.1.104:3500';
+
+  let selectedIpAddress = ipAddress2;
   const navigation = useNavigation<any>();
   const toast = useToast();
   const [show, setShow] = useState(false);
@@ -40,10 +44,9 @@ const Login = () => {
     setIsLoading(true);
     console.log('hello', 'isClicked');
     try {
-      console.log('form', form);
+      console.log(`${selectedIpAddress}/login/user`);
       await axios
-        .post('http://172.20.10.4:3500/login/user', {form})
-        //.post('http://192.168.1.111:3500/login/user', {form})
+        .post(`${selectedIpAddress}/login/user`, {form})
         .then(res => {
           if (form.email == '' || form.password == '') {
             setIsLoading(false);
@@ -77,9 +80,9 @@ const Login = () => {
                 await AsyncStorage.setItem(itemKey[i], itemValue[i]);
                 console.log(`Item ${itemKey[i]} set successfully.`);
               }
+              navigation.replace('Main', {screen: 'Home'});
+              setIsLoading(false);
             })();
-            navigation.replace('Main', {screen: 'Home'});
-            setIsLoading(false);
           } else if (res.data == 'No user') {
             setIsLoading(false);
             toast.show({
@@ -105,9 +108,6 @@ const Login = () => {
       console.log(e);
     }
   };
-  // const keys = AsyncStorage.getAllKeys()
-
-  // console.log("storage", keys)
 
   return (
     <VStack bg="#003572" height="100%">

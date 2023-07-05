@@ -6,6 +6,10 @@ import axios from 'axios';
 import {useRoute, useNavigation} from '@react-navigation/native';
 
 const Location = () => {
+  const ipAddress1 = 'http://172.20.10.4:3500';
+  const ipAddress2 = 'http://192.168.1.104:3500';
+
+  let selectedIpAddress = ipAddress2;
   const navigation = useNavigation<any>();
   const [etaDistances, setEtaDistances] = useState<any>([]);
 
@@ -40,7 +44,7 @@ const Location = () => {
   useEffect(() => {
     axios
       //.get("http://192.168.1.111:3500/carparkbuilding")
-      .get('http://172.20.10.4:3500/carparkbuilding')
+      .get(`${selectedIpAddress}/carparkbuilding`)
       .then(response => {
         setBuildings(response.data);
       })
@@ -62,7 +66,7 @@ const Location = () => {
               const {latitude, longitude} = position.coords;
               setCurrentLocation({latitude, longitude});
             },
-            error => console.error(error),
+            error => console.error('location', error),
             {enableHighAccuracy: false, timeout: 20000, maximumAge: 1000},
           );
         } else {

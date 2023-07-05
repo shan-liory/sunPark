@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import {Box, Text, Button, HStack, VStack, Center, FlatList} from 'native-base';
 import {useRoute, useNavigation} from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type ParkingLot = {
   _id: string;
@@ -11,14 +12,35 @@ type ParkingLot = {
 };
 
 const ParkingSession = () => {
+  const ipAddress1 = 'http://172.20.10.4:3500';
+  const ipAddress2 = 'http://192.168.1.104:3500';
+
+  let selectedIpAddress = ipAddress2;
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
 
   const [lots, setLots] = useState<Array<ParkingLot>>();
+  const [userId, setUserId] = useState('');
+  const [QRparkingLot, setQRParkingLot] = useState('');
+
+  useEffect(() => {
+    const getParkingLotAndUser = async () => {
+      const value = await AsyncStorage.getItem('parkingLot');
+      const userId = await AsyncStorage.getItem('id');
+      console.log(value);
+      if (userId != null) {
+        setUserId(userId);
+      }
+      if (value != null) {
+        setQRParkingLot(value);
+      }
+    };
+    getParkingLotAndUser();
+  }, []);
+
   useEffect(() => {
     axios
-      //.get('http://192.168.1.111:3500/parkingLotsStatus')
-      .get('http://172.20.10.4:3500/parkingLotsStatus')
+      .get(`${selectedIpAddress}/parkingLotsStatus`)
       .then(response => {
         setLots(response.data);
       })
@@ -29,18 +51,19 @@ const ParkingSession = () => {
 
   // console.log(lots);
 
-  const onPressEndSession = () => {
-    axios
-      // .post('http://192.168.1.111:3500/parkingQrCode/endSession', {
-      //   parkingLot: route.params.parkedLotId,
-      // })
-      .post('http://172.20.10.4:3500/parkingQrCode/endSession', {
-        parkingLot: route.params.parkedLotId,
+  const onPressEndSession = async () => {
+    await axios
+      .post(`${selectedIpAddress}/parkingQrCode/endSession`, {
+        parkingLot: route.params.parkedLotName || QRparkingLot,
+        userId: userId,
       })
       .then(res => {
         if (res.data.message === 'success') {
           console.log('hehe');
-          navigation.goBack();
+          (async () => {
+            await AsyncStorage.setItem('parkingLot', '');
+            navigation.replace('QR1');
+          })();
         } else {
           console.log('record not found');
         }
@@ -59,7 +82,9 @@ const ParkingSession = () => {
       <Box alignItems="center" mt={4}>
         <Text color="white">
           You have parked at lot{' '}
-          <Text fontWeight="bold">{route.params.parkedLotName}</Text>
+          <Text fontWeight="bold">
+            {route.params.parkedLotName || QRparkingLot}
+          </Text>
         </Text>
       </Box>
       <FlatList

@@ -20,6 +20,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 const Profile = () => {
+  const ipAddress1 = 'http://172.20.10.4:3500';
+  const ipAddress2 = 'http://192.168.1.104:3500';
+
+  let selectedIpAddress = ipAddress2;
   const [profileData, setProfileData] = useState({
     id: '',
     name: '',
@@ -87,12 +91,9 @@ const Profile = () => {
       setIsError({...isError, name: 'Passwords are not match!'});
     } else {
       await axios
-        .post('http://172.20.10.4:3500/user-reset-password', {
+        .post(`${selectedIpAddress}/user-reset-password`, {
           resetPasswordForm,
         })
-        // .post('http://192.168.1.111:3500/user-reset-password', {
-        //   resetPasswordForm,
-        // })
         .then(res => {
           if (res.data == 'same password') {
             setIsError({...isError, name: 'Password is same as the previous.'});

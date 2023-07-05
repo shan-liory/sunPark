@@ -35,6 +35,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import Reservation from './screen/Reservation';
 import SignUp from './screen/SignUp';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ReservationStatus from './screen/ReservationStatus';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -47,6 +48,10 @@ function ReservationStackNavigator() {
       <ReservationStack.Screen
         name="ConfirmReserve"
         component={ConfirmReservation}
+      />
+      <ReservationStack.Screen
+        name="ReservationStatus"
+        component={ReservationStatus}
       />
     </ReservationStack.Navigator>
   );
@@ -186,13 +191,16 @@ const App: React.FC = () => {
         <NavigationContainer>
           <Stack.Navigator screenOptions={{headerShown: false}}>
             {isLoggedIn ? (
-              <React.Fragment>
+              <>
                 <Stack.Screen name="Main" component={MainNavigator} />
                 <Stack.Screen name="Main_Auth" component={AuthStackNavigator} />
-              </React.Fragment>
+              </>
             ) : (
-              // <Stack.Screen name="auth" component={AuthStackNavigator} />
-              <Stack.Screen name="auth" component={AuthStackNavigator} />
+              <>
+                <Stack.Screen name="Main_Auth" component={AuthStackNavigator} />
+                <Stack.Screen name="Main" component={MainNavigator} />
+                {/* <Stack.Screen name="auth_Main" component={MainNavigator} /> */}
+              </>
             )}
           </Stack.Navigator>
         </NavigationContainer>
