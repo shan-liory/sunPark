@@ -1993,6 +1993,9 @@ mipmap ic_launcher_foreground
 mipmap ic_launcher_monochrome
 mipmap ic_launcher_round
 plurals mtrl_badge_content_description
+string REACT_APP_IP_ADDRESS
+string REACT_APP_ipAddress1
+string REACT_APP_ipAddress2
 string abc_action_bar_home_description
 string abc_action_bar_up_description
 string abc_action_menu_overflow_description

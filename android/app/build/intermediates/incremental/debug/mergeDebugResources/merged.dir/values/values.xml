@@ -681,6 +681,9 @@
     <item quantity="one"><ns1:g id="count">%d</ns1:g> new notification</item>
     <item quantity="other"><ns1:g id="count">%d</ns1:g> new notifications</item>
   </plurals>
+    <string name="REACT_APP_IP_ADDRESS" translatable="false">"http://192.168.1.104:3500"</string>
+    <string name="REACT_APP_ipAddress1" translatable="false">"172.20.10.4:3500"</string>
+    <string name="REACT_APP_ipAddress2" translatable="false">"192.168.1.104:3500"</string>
     <string name="abc_action_bar_home_description">Navigate home</string>
     <string name="abc_action_bar_up_description">Navigate up</string>
     <string name="abc_action_menu_overflow_description">More options</string>

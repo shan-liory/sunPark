@@ -13,4 +13,10 @@ public final class BuildConfig {
   public static final boolean IS_HERMES_ENABLED = true;
   // Field from default config.
   public static final boolean IS_NEW_ARCHITECTURE_ENABLED = false;
+  // Field from default config.
+  public static final String REACT_APP_IP_ADDRESS = "http://192.168.1.104:3500";
+  // Field from default config.
+  public static final String REACT_APP_ipAddress1 = "172.20.10.4:3500";
+  // Field from default config.
+  public static final String REACT_APP_ipAddress2 = "192.168.1.104:3500";
 }

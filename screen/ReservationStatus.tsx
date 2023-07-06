@@ -18,6 +18,7 @@ import {faAngleLeft} from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useRoute, useNavigation} from '@react-navigation/native';
+import {axiosInstance} from '../api';
 
 const ReservationStatus = () => {
   const ipAddress1 = 'http://172.20.10.4:3500';
@@ -39,8 +40,8 @@ const ReservationStatus = () => {
     const value3 = await AsyncStorage.getItem('reservedParkingLot');
     console.log('getReservationStatus', value, value2);
     try {
-      await axios
-        .get(`${selectedIpAddress}/retrieveUserReservationStatus`, {
+      await axiosInstance
+        .get(`/retrieveUserReservationStatus`, {
           params: {
             value: value,
           },
@@ -102,8 +103,8 @@ const ReservationStatus = () => {
     const id = await AsyncStorage.getItem('id');
     console.log(pRLot, id);
     try {
-      await axios
-        .post(`${selectedIpAddress}/cancelReservation`, {
+      await axiosInstance
+        .post(`/cancelReservation`, {
           lot: pRLot,
           userId: id,
         })
@@ -137,7 +138,7 @@ const ReservationStatus = () => {
   };
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', getReservationStatus);
-    setInterval(getReservationStatus, 10000);
+    //setInterval(getReservationStatus, 10000);
     // Cleanup the listener when the component unmounts or the screen loses focus
     return () => {
       unsubscribe();
@@ -159,11 +160,8 @@ const ReservationStatus = () => {
           </Text>
         </Box>
         {pending ? (
-          <VStack space="4" width="90%" alignItems={'center'} mt={4} mb={10}>
-            <Text
-              fontWeight="bold"
-              color="white"
-              justifyContent={'space-between'}>
+          <VStack space="4" alignItems={'center'} mt={4} p={5}>
+            <Text fontWeight="bold" color="white">
               You have a pending reservation! Kindly wait for the administrator
               to review your reservation request.
             </Text>
@@ -173,7 +171,7 @@ const ReservationStatus = () => {
             </Button>
           </VStack>
         ) : (
-          <VStack space="4" width="90%" alignItems={'center'} mt={4} mb={10}>
+          <VStack space="4" alignItems={'center'} mt={4} p={5}>
             <Box display={isApproved ? 'flex' : 'none'} alignItems={'center'}>
               <Text fontWeight="bold" color="white">
                 Your reserved has been

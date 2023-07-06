@@ -24,6 +24,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import moment from 'moment';
+import {axiosInstance} from '../api';
 
 const ConfirmReservation = () => {
   const ipAddress1 = 'http://172.20.10.4:3500';
@@ -120,8 +121,8 @@ const ConfirmReservation = () => {
   const handleReservation = async () => {
     console.log(allReservationDetails);
     setIsButtonDisabled(true);
-    await axios
-      .post(`${selectedIpAddress}/reservation`, {allReservationDetails})
+    await axiosInstance
+      .post(`/reservation`, {allReservationDetails})
       .then(response => {
         if (response.data == 'updated') {
           //   console.log('CR', allReservationDetails.chosenLot);

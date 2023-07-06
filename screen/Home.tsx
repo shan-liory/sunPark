@@ -13,11 +13,13 @@ import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faCab} from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Config from 'react-native-config';
+import {axiosInstance} from '../api';
 
 const Home = () => {
   const ipAddress1 = 'http://172.20.10.4:3500';
   const ipAddress2 = 'http://192.168.1.104:3500';
-
+  //console.log(Config.REACT_APP_IP_ADDRESS);
   let selectedIpAddress = ipAddress2;
   const [parkingLots, setParkingLots] = useState(0);
   const [availableReserveParking, setAvailableReserveParking] = useState(0);
@@ -79,8 +81,8 @@ const Home = () => {
   };
 
   const getAvailableParkingLots = () => {
-    axios
-      .get(`${selectedIpAddress}/availableParkingLots`)
+    axiosInstance
+      .get(`/availableParkingLots`)
       .then(response => {
         // console.log(response.data.length)
         setParkingLots(response.data.length);
@@ -91,8 +93,8 @@ const Home = () => {
   };
 
   const getAvailableReserveParkingLots = () => {
-    axios
-      .get(`${selectedIpAddress}/availableReserveParkingLots`)
+    axiosInstance
+      .get(`/availableReserveParkingLots`)
       .then(response => {
         // console.log('availableR', response.data);
         setAvailableReserveParking(response.data.reservedParkingLots.length);

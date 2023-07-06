@@ -16,6 +16,7 @@ import {useNavigation} from '@react-navigation/native';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faCircleXmark} from '@fortawesome/free-solid-svg-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {axiosInstance} from '../api';
 
 const ScanQR = () => {
   const ipAddress1 = 'http://172.20.10.4:3500';
@@ -41,8 +42,8 @@ const ScanQR = () => {
   const onSuccess = async (e: {data: string}) => {
     console.log(e.data);
     const user = await AsyncStorage.getItem('id');
-    axios
-      .post(`${selectedIpAddress}/parkingQrCode/get`, {
+    axiosInstance
+      .post(`/parkingQrCode/get`, {
         parkingLot: e.data,
         userId: user,
       })

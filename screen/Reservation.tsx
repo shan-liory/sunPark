@@ -24,6 +24,7 @@ import {
   faTruckMedical,
 } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import {axiosInstance} from '../api';
 
 const Reservation = () => {
   const ipAddress1 = 'http://172.20.10.4:3500';
@@ -129,8 +130,8 @@ const Reservation = () => {
 
   const getRParking = () => {
     try {
-      axios
-        .get(`${selectedIpAddress}/availableReserveParkingLots`)
+      axiosInstance
+        .get(`/availableReserveParkingLots`)
         .then(response => {
           setReserveParking(response.data.rParkingLots);
         })
@@ -169,42 +170,44 @@ const Reservation = () => {
       const pendingPL = await AsyncStorage.getItem('pendingReservedParkingLot');
       const reservedPL = await AsyncStorage.getItem('reservedParkingLot');
 
-      console.log(parkingLot, pendingPL, reservedPL);
-      try {
-        await axios
-          .get(`${selectedIpAddress}/retrieveUserReservationStatus`, {
-            params: {
-              value: user,
-            },
-          })
-          .then(response => {
-            console.log('status');
-            if (response.data.message == 'pending') {
-              console.log('pending');
-              (async () => {
-                await AsyncStorage.setItem(
-                  'pendingReservedParkingLot',
-                  response.data.data.parkingLotName,
-                );
-              })();
-            } else if (response.data.message == 'rejected') {
-              navigation.navigate('ReservationStatus', {allReservationDetails});
-            }
-          })
-          .catch(error => {
-            console.log('pendingR', error);
-          });
-      } catch (error) {
-        console.log(error);
-      }
+      console.log('first', parkingLot, pendingPL, reservedPL);
 
       if (parkingLot != null) {
         setHasQRSession(true);
-      } else if (pendingPL != null || reservedPL != null) {
+      } else if (pendingPL != null) {
+        console.log('go status');
         navigation.navigate('ReservationStatus', {allReservationDetails});
+      } else if (reservedPL == null) {
+        try {
+          await axiosInstance
+            .get(`/retrieveUserReservationStatus`, {
+              params: {
+                value: user,
+              },
+            })
+            .then(response => {
+              console.log('status');
+              if (response.data.message == 'pending') {
+                console.log('pending');
+                (async () => {
+                  await AsyncStorage.setItem(
+                    'pendingReservedParkingLot',
+                    response.data.data.parkingLotName,
+                  );
+                })();
+              } else if (response.data.message == 'rejected') {
+                navigation.navigate('ReservationStatus', {
+                  allReservationDetails,
+                });
+              }
+            })
+            .catch(error => {
+              console.log('pendingR', error);
+            });
+        } catch (error) {
+          console.log(error);
+        }
       }
-
-      console.log(parkingLot, pendingPL, reservedPL);
     };
 
     const unsubscribe = navigation.addListener('focus', getStatus);

@@ -20,6 +20,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faEye, faEyeSlash} from '@fortawesome/free-solid-svg-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {DevSettings} from 'react-native';
+import {axiosInstance} from '../api';
 
 const Login = () => {
   const ipAddress1 = 'http://172.20.10.4:3500';
@@ -44,9 +45,8 @@ const Login = () => {
     setIsLoading(true);
     console.log('hello', 'isClicked');
     try {
-      console.log(`${selectedIpAddress}/login/user`);
-      await axios
-        .post(`${selectedIpAddress}/login/user`, {form})
+      await axiosInstance
+        .post(`/login/user`, {form})
         .then(res => {
           if (form.email == '' || form.password == '') {
             setIsLoading(false);
@@ -73,7 +73,7 @@ const Login = () => {
               res.data.carPlate,
               res.data.parkingLot,
               res.data.reservedParkingLotId,
-              '',
+              res.data.pendingParkingLot,
             ];
             (async () => {
               for (let i = 0; i < itemKey.length; i++) {

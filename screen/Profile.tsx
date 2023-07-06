@@ -18,6 +18,7 @@ import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faAngleRight, faCheck, faEdit} from '@fortawesome/free-solid-svg-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import {axiosInstance} from '../api';
 
 const Profile = () => {
   const ipAddress1 = 'http://172.20.10.4:3500';
@@ -90,8 +91,8 @@ const Profile = () => {
     } else if (resetPasswordForm.password != resetPasswordForm.cpassword) {
       setIsError({...isError, name: 'Passwords are not match!'});
     } else {
-      await axios
-        .post(`${selectedIpAddress}/user-reset-password`, {
+      await axiosInstance
+        .post(`/user-reset-password`, {
           resetPasswordForm,
         })
         .then(res => {
@@ -126,6 +127,7 @@ const Profile = () => {
         'phone',
         'parkingLot',
         'reservedParkingLot',
+        'pendingReservedParkingLot',
       ]);
       if (keyValuePair !== null) {
         const values = keyValuePair.map(([key, value]) => value);

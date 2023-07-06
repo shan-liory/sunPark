@@ -3,6 +3,7 @@ import axios from 'axios';
 import {Box, Text, Button, HStack, VStack, Center, FlatList} from 'native-base';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {axiosInstance} from '../api';
 
 type ParkingLot = {
   _id: string;
@@ -39,8 +40,8 @@ const ParkingSession = () => {
   }, []);
 
   useEffect(() => {
-    axios
-      .get(`${selectedIpAddress}/parkingLotsStatus`)
+    axiosInstance
+      .get(`/parkingLotsStatus`)
       .then(response => {
         setLots(response.data);
       })
@@ -52,8 +53,8 @@ const ParkingSession = () => {
   // console.log(lots);
 
   const onPressEndSession = async () => {
-    await axios
-      .post(`${selectedIpAddress}/parkingQrCode/endSession`, {
+    await axiosInstance
+      .post(`/parkingQrCode/endSession`, {
         parkingLot: route.params.parkedLotName || QRparkingLot,
         userId: userId,
       })

@@ -20,6 +20,7 @@ import axios from 'axios';
 import {useNavigation} from '@react-navigation/native';
 import {FontAwesomeIcon} from '@fortawesome/react-native-fontawesome';
 import {faEye, faEyeSlash} from '@fortawesome/free-solid-svg-icons';
+import {axiosInstance} from '../api';
 
 const SignUp = () => {
   const ipAddress1 = 'http://172.20.10.4:3500';
@@ -72,8 +73,8 @@ const SignUp = () => {
         });
       } else {
         setIsLoading(true);
-        await axios
-          .post(`${selectedIpAddress}/sign-up/user`, {
+        await axiosInstance
+          .post(`/sign-up/user`, {
             form,
           })
           .then(res => {

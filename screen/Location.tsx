@@ -4,97 +4,118 @@ import {Box, Text, VStack, HStack, Spinner, Pressable} from 'native-base';
 import Geolocation from '@react-native-community/geolocation';
 import axios from 'axios';
 import {useRoute, useNavigation} from '@react-navigation/native';
+import {axiosInstance} from '../api';
+
+type Location = {
+  latitude?: number;
+  longitude?: number;
+} | null;
+
+type Building = {
+  _id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+}[];
+
+type EtaDistance = Array<{
+  distanceText: string;
+  eta: string;
+}>;
 
 const Location = () => {
-  const ipAddress1 = 'http://172.20.10.4:3500';
-  const ipAddress2 = 'http://192.168.1.104:3500';
-
-  let selectedIpAddress = ipAddress2;
   const navigation = useNavigation<any>();
-  const [etaDistances, setEtaDistances] = useState<any>([]);
-
-  type Location = {
-    latitude: number;
-    longitude: number;
-  };
-
-  type Building = {
-    _id: string;
-    name: string;
-    latitude: number;
-    longitude: number;
-  }[];
-
-  const [currentLocation, setCurrentLocation] = useState<Location>({
-    latitude: 0,
-    longitude: 0,
-  });
-
+  const [etaDistances, setEtaDistances] = useState<EtaDistance>([]);
+  const [currentLocation, setCurrentLocation] = useState<Location>(null);
   const [buildings, setBuildings] = useState<Building>([]);
 
   useEffect(() => {
-    axios
-      //.get("http://192.168.1.111:3500/carparkbuilding")
-      .get(`${selectedIpAddress}/carparkbuilding`)
-      .then(response => {
-        setBuildings(response.data);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
+    const init = async () => {
+      const grantedPermission = await requestLocationPermission();
+      if (!grantedPermission) return;
+
+      const buildings = await getBuildings();
+      setBuildings(buildings);
+      const currentPosition = await getCurrentPosition();
+      setCurrentLocation(currentPosition);
+      console.log('currentPosition', currentPosition);
+      await fetchEtaDistances({
+        buildings,
+        currentPosition,
       });
+    };
+
+    init().catch(err => {
+      console.log(err);
+    });
   }, []);
 
-  useEffect(() => {
-    const requestLocationPermission = async () => {
+  const getBuildings = async () => {
+    try {
+      const response = await axiosInstance.get<Building>(`/carparkbuilding`);
+      return response.data;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const requestLocationPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (err) {
+      console.error(err);
+    }
+    return false;
+  };
+
+  const getCurrentPosition = (): Promise<{
+    latitude: number;
+    longitude: number;
+  }> => {
+    return new Promise((resolve, reject) => {
+      Geolocation.getCurrentPosition(
+        position => {
+          const {latitude, longitude} = position.coords;
+          resolve({
+            latitude,
+            longitude,
+          });
+        },
+        error => reject(error),
+        {enableHighAccuracy: false, timeout: 20000, maximumAge: 1000},
+      );
+    });
+  };
+
+  const fetchEtaDistances = async ({
+    buildings,
+    currentPosition,
+  }: {
+    buildings: Building;
+    currentPosition: Location;
+  }) => {
+    const results: EtaDistance = [];
+    console.log('buildings length: ', buildings.length);
+    for (const building of buildings) {
       try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('Location permission granted');
-          Geolocation.getCurrentPosition(
-            position => {
-              const {latitude, longitude} = position.coords;
-              setCurrentLocation({latitude, longitude});
-            },
-            error => console.error('location', error),
-            {enableHighAccuracy: false, timeout: 20000, maximumAge: 1000},
-          );
-        } else {
-          console.log('Location permission denied');
-        }
-      } catch (err) {}
-    };
+        const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${currentPosition?.latitude},${currentPosition?.longitude}&destination=${building.latitude},${building.longitude}&key=AIzaSyC5SD9ibmsRme7-gSoPKbD83CCznYox76Q`;
 
-    requestLocationPermission();
-  }, []);
+        const response = await axios.get(url);
 
-  useEffect(() => {
-    const fetchEtaDistances = async () => {
-      if (currentLocation && buildings.length > 0) {
-        const results = [];
-        for (const building of buildings) {
-          console.log('test');
-          try {
-            const response = await axios.get(
-              `https://maps.googleapis.com/maps/api/directions/json?origin=${currentLocation.latitude},${currentLocation.longitude}&destination=${building.latitude},${building.longitude}&key=AIzaSyC5SD9ibmsRme7-gSoPKbD83CCznYox76Q`,
-            );
-            console.log('test3');
-            const {duration, distance} = response.data.routes[0].legs[0];
-            const eta = duration.text;
-            const distanceText = distance.text;
-            // console.log({eta, distanceText});
-            results.push({eta, distanceText});
-          } catch (error) {
-            console.error('Error:', error);
-          }
-        }
-        console.log('results', results);
-        setEtaDistances(results);
+        const {duration, distance} = response.data.routes[0].legs[0];
+        const eta = duration.text;
+        const distanceText = distance.text;
+        results.push({eta, distanceText});
+      } catch (error) {
+        console.error('Error:', error);
       }
-    };
-    fetchEtaDistances();
-  }, [currentLocation, buildings]);
+    }
+    setEtaDistances(results);
+  };
 
   return (
     <VStack bg="#003572" height="100%">
