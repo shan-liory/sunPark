@@ -18,28 +18,19 @@ const Location = () => {
     longitude: number;
   };
 
-  type Building = [
-    {
-      _id: string;
-      name: string;
-      latitude: number;
-      longitude: number;
-    },
-  ];
+  type Building = {
+    _id: string;
+    name: string;
+    latitude: number;
+    longitude: number;
+  }[];
 
   const [currentLocation, setCurrentLocation] = useState<Location>({
     latitude: 0,
     longitude: 0,
   });
 
-  const [buildings, setBuildings] = useState<Building>([
-    {
-      _id: '',
-      name: '',
-      latitude: 0,
-      longitude: 0,
-    },
-  ]);
+  const [buildings, setBuildings] = useState<Building>([]);
 
   useEffect(() => {
     axios
@@ -80,23 +71,25 @@ const Location = () => {
 
   useEffect(() => {
     const fetchEtaDistances = async () => {
-      if (currentLocation) {
+      if (currentLocation && buildings.length > 0) {
         const results = [];
         for (const building of buildings) {
+          console.log('test');
           try {
             const response = await axios.get(
               `https://maps.googleapis.com/maps/api/directions/json?origin=${currentLocation.latitude},${currentLocation.longitude}&destination=${building.latitude},${building.longitude}&key=AIzaSyC5SD9ibmsRme7-gSoPKbD83CCznYox76Q`,
             );
-
+            console.log('test3');
             const {duration, distance} = response.data.routes[0].legs[0];
             const eta = duration.text;
             const distanceText = distance.text;
             // console.log({eta, distanceText});
             results.push({eta, distanceText});
           } catch (error) {
-            // console.error('Error:', error);
+            console.error('Error:', error);
           }
         }
+        console.log('results', results);
         setEtaDistances(results);
       }
     };
